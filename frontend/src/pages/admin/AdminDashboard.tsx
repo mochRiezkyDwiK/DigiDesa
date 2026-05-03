@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { EASE_SPRING } from "../constants/animation";
-import {
-  LayoutDashboard,
-  Files,
-  AlertTriangle,
-  Users,
-  BarChart3,
-  CheckCircle,
+import { 
+  LayoutDashboard, 
+  Files, 
+  AlertTriangle, 
+  Users, 
+  BarChart3, 
+  CheckCircle, 
   XCircle,
   ArrowUpRight,
   Search,
@@ -22,6 +21,7 @@ import {
   Building2,
   Settings,
 } from "lucide-react";
+import { EASE_SPRING } from "../../constants/animation";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },

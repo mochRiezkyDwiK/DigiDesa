@@ -1,18 +1,21 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import DashboardWarga from "./pages/DashboardWarga";
-import Layanan from "./pages/Layanan";
-import Lapor from "./pages/Lapor";
-import Finansial from "./pages/Finansial";
-import Profil from "./pages/Profil";
+// Client pages
+import Home from "./pages/client/Home";
+import Login from "./pages/client/Login";
+import DashboardWarga from "./pages/client/DashboardWarga";
+import Layanan from "./pages/client/Layanan";
+import Lapor from "./pages/client/Lapor";
+import Finansial from "./pages/client/Finansial";
+import Profil from "./pages/client/Profil";
+import Surat from "./pages/client/Surat";
 
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminValidasiSurat from "./pages/AdminValidasiSurat";
-import AdminLaporan from "./pages/AdminLaporan";
-import AdminPenduduk from "./pages/AdminPenduduk";
-import AdminKeuangan from "./pages/AdminKeuangan";
-import AdminPengaturan from "./pages/AdminPengaturan";
+// Admin pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminValidasiSurat from "./pages/admin/AdminValidasiSurat";
+import AdminLaporan from "./pages/admin/AdminLaporan";
+import AdminPenduduk from "./pages/admin/AdminPenduduk";
+import AdminKeuangan from "./pages/admin/AdminKeuangan";
+import AdminPengaturan from "./pages/admin/AdminPengaturan";
 
 // Halaman Dummy Sementara (Hanya yang benar-benar belum ada filenya)
 const LaporDummy = () => <div className="p-10 text-center text-2xl font-bold text-slate-800">Halaman Lapor (Sedang Dibangun)</div>;
@@ -34,6 +37,8 @@ function App() {
           <Route path="/layanan" element={<Layanan />} />
 
           <Route path="/lapor" element={<Lapor />} />
+
+          <Route path="/surat" element={<Surat />} />
 
           <Route path="/finansial" element={<Finansial />} />
 
