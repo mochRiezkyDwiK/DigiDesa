@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom"; // Tambahkan useNavigate di sini
+import { EASE_SPRING } from "../constants/animation";
 import { 
   Layers, 
   Lock, 
@@ -13,10 +14,6 @@ import {
   Loader2,
   Globe
 } from "lucide-react";
-
-// ─── ANIMATION CONFIG ─────────────────────────────────────────────────────────
-
-const EASE_SPRING = [0.16, 1, 0.3, 1];
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },

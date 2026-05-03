@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { EASE_SPRING, STAGGER_CONTAINER, FADE_UP } from "../constants/animation";
 import {
   ArrowRight,
   Shield,
@@ -19,19 +20,6 @@ import {
   Activity,
 } from "lucide-react";
 
-// ─── CONSTANTS ────────────────────────────────────────────────────────────────
-
-const EASE_SPRING = [0.16, 1, 0.3, 1];
-
-const STAGGER_CONTAINER = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-};
-
-const FADE_UP = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE_SPRING } },
-};
 
 // ─── NAVBAR ───────────────────────────────────────────────────────────────────
 
