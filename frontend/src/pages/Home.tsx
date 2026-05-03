@@ -8,6 +8,7 @@ import {
   Zap,
   FileText,
   CheckCircle2,
+  MessageSquare,
   Clock,
   Bell,
   Users,
@@ -18,6 +19,7 @@ import {
   Lock,
   TrendingUp,
   Activity,
+  ChevronDown,
 } from "lucide-react";
 
 
@@ -25,6 +27,7 @@ import {
 
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [layananDropdown, setLayananDropdown] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +35,17 @@ function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (layananDropdown) {
+        setLayananDropdown(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [layananDropdown]);
 
   return (
     <motion.nav
@@ -57,14 +71,71 @@ function Navbar() {
 
         {/* Nav Links */}
         <div className="hidden md:flex items-center gap-8">
-          {["Layanan", "Statistik", "Pengumuman", "Bantuan"].map((item) => (
-            <a
-              key={item}
-              href="#"
+          {/* Dropdown Layanan */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLayananDropdown(!layananDropdown);
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200 flex items-center gap-1"
+            >
+              Layanan
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${layananDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {layananDropdown && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-full left-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-lg shadow-slate-900/10 py-2 z-50"
+              >
+                <button
+                  onClick={() => {
+                    navigate('/lapor');
+                    setLayananDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors duration-200 flex items-center gap-3"
+                >
+                  <MessageSquare className="w-4 h-4 text-blue-600" />
+                  <div>
+                    <div className="font-medium">Pengaduan</div>
+                    <div className="text-xs text-slate-500">Laporkan masalah atau keluhan</div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    navigate('/surat');
+                    setLayananDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors duration-200 flex items-center gap-3"
+                >
+                  <FileText className="w-4 h-4 text-green-600" />
+                  <div>
+                    <div className="font-medium">Pembuatan Surat</div>
+                    <div className="text-xs text-slate-500">SKTM, KTP, dan lainnya</div>
+                  </div>
+                </button>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Menu lainnya */}
+          {[
+            { name: "Statistik", path: "/statistik" },
+            { name: "Pengumuman", path: "/pengumuman" },
+            { name: "Bantuan", path: "/bantuan" }
+          ].map((item) => (
+            <button
+              key={item.name}
+              onClick={() => navigate(item.path)}
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200"
             >
-              {item}
-            </a>
+              {item.name}
+            </button>
           ))}
         </div>
 
