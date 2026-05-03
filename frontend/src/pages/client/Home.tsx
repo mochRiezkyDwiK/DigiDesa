@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { EASE_SPRING, STAGGER_CONTAINER, FADE_UP } from "../constants/animation";
+import { EASE_SPRING, STAGGER_CONTAINER, FADE_UP } from "../../constants/animation";
 import {
   ArrowRight,
   Shield,

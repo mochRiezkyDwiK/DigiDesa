@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
-import { EASE_SPRING } from "../constants/animation";
+import { EASE_SPRING } from "../../constants/animation";
 import { 
   FileText, 
   Search, 
