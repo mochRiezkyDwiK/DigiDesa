@@ -7,6 +7,7 @@ import Layanan from "./pages/client/Layanan";
 import Lapor from "./pages/client/Lapor";
 import Finansial from "./pages/client/Finansial";
 import Profil from "./pages/client/Profil";
+import Surat from "./pages/client/Surat";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -36,6 +37,8 @@ function App() {
           <Route path="/layanan" element={<Layanan />} />
 
           <Route path="/lapor" element={<Lapor />} />
+
+          <Route path="/surat" element={<Surat />} />
 
           <Route path="/finansial" element={<Finansial />} />
 
