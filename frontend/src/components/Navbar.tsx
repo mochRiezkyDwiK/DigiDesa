@@ -47,6 +47,9 @@ function Navbar() {
           <span className="font-extrabold text-slate-900 tracking-tight text-[1.1rem]">
             Digi<span className="text-blue-700">Desa</span>
           </span>
+          <a href="/" className="font-extrabold text-slate-900 tracking-tight text-[1.1rem]">
+            Digi<span className="text-blue-700">Desa</span>
+          </a>
         </div>
 
         {/* Nav Links */}

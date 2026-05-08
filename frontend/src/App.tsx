@@ -9,6 +9,8 @@ import Finansial from "./pages/client/Finansial";
 import Profil from "./pages/client/Profil";
 import Surat from "./pages/client/Surat";
 import TransparansiAnggaran from "./pages/client/TransparansiAnggaran";
+import Pengumuman from "./pages/client/pengumuman";
+import Bantuan from "./pages/client/bantuan";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -45,6 +47,10 @@ function App() {
           <Route path="/profil" element={<Profil />} />
 
           <Route path="/transparansi-anggaran" element={<TransparansiAnggaran />} />
+
+          <Route path="/pengumuman" element={<Pengumuman />} />
+
+          <Route path="/bantuan" element={<Bantuan />} />
 
           <Route path="/admin" element={<AdminDashboard />} />
 
