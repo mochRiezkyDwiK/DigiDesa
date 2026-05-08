@@ -44,9 +44,9 @@ function Navbar() {
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
             <Layers className="w-4 h-4 text-white" />
           </div>
-          <span className="font-extrabold text-slate-900 tracking-tight text-[1.1rem]">
+          <a href="/" className="font-extrabold text-slate-900 tracking-tight text-[1.1rem]">
             Digi<span className="text-blue-700">Desa</span>
-          </span>
+          </a>
         </div>
 
         {/* Nav Links */}
