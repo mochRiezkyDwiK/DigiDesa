@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 // Client pages
 import Home from "./pages/client/Home";
 import Login from "./pages/client/Login";
@@ -8,6 +8,7 @@ import Lapor from "./pages/client/Lapor";
 import Finansial from "./pages/client/Finansial";
 import Profil from "./pages/client/Profil";
 import Surat from "./pages/client/Surat";
+import TransparansiAnggaran from "./pages/client/TransparansiAnggaran";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -22,9 +23,8 @@ const LaporDummy = () => <div className="p-10 text-center text-2xl font-bold tex
 
 function App() {
   return (
-    <Router>
-      <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen">
-        <Routes>
+    <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen">
+      <Routes>
           {/* Rute Utama */}
           <Route path="/" element={<Home />} />
           
@@ -44,6 +44,7 @@ function App() {
 
           <Route path="/profil" element={<Profil />} />
 
+          <Route path="/transparansi-anggaran" element={<TransparansiAnggaran />} />
 
           <Route path="/admin" element={<AdminDashboard />} />
 
@@ -60,8 +61,7 @@ function App() {
           {/* Rute Lainnya */}
           <Route path="/lapor" element={<LaporDummy />} />
         </Routes>
-      </div>
-    </Router>
+    </div>
   );
 }
 
