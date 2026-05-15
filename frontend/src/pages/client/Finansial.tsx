@@ -16,6 +16,7 @@ import {
   ChevronRight,
   CheckCircle2
 } from "lucide-react";
+
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({

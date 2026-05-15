@@ -42,6 +42,11 @@ function Navbar() {
               DigiDesa
             </span>
             <div className="text-xs text-gray-600 font-medium">Pemerintah Desa</div>
+          <span className="font-extrabold text-slate-900 tracking-tight text-[1.1rem]">
+            Digi<span className="text-blue-700">Desa</span>
+          </span>
+          <a href="/" className="font-extrabold text-slate-900 tracking-tight text-[1.1rem]">
+            Digi<span className="text-blue-700">Desa</span>
           </a>
         </div>
 
