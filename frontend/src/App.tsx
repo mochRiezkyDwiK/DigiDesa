@@ -14,9 +14,6 @@ import AdminPenduduk from "./pages/AdminPenduduk";
 import AdminKeuangan from "./pages/AdminKeuangan";
 import AdminPengaturan from "./pages/AdminPengaturan";
 
-// Halaman Dummy Sementara (Hanya yang benar-benar belum ada filenya)
-const LaporDummy = () => <div className="p-10 text-center text-2xl font-bold text-slate-800">Halaman Lapor (Sedang Dibangun)</div>;
-
 function App() {
   return (
     <Router>
@@ -24,36 +21,22 @@ function App() {
         <Routes>
           {/* Rute Utama */}
           <Route path="/" element={<Home />} />
-          
-          {/* Rute Login - Pastikan merujuk ke file Login.tsx yang premium tadi */}
           <Route path="/login" element={<Login />} />
           
-          {/* Rute Dashboard - Pastikan file DashboardWarga.tsx sudah di-save */}
+          {/* Rute Warga */}
           <Route path="/dashboard-warga" element={<DashboardWarga />} />
-
           <Route path="/layanan" element={<Layanan />} />
-
           <Route path="/lapor" element={<Lapor />} />
-
           <Route path="/finansial" element={<Finansial />} />
-
           <Route path="/profil" element={<Profil />} />
 
-
+          {/* Rute Admin */}
           <Route path="/admin" element={<AdminDashboard />} />
-
           <Route path="/admin/validasi" element={<AdminValidasiSurat />} />
-
           <Route path="/admin/laporan" element={<AdminLaporan />} />
-
           <Route path="/admin/penduduk" element={<AdminPenduduk />} />
-
           <Route path="/admin/keuangan" element={<AdminKeuangan />} />
-
           <Route path="/admin/pengaturan" element={<AdminPengaturan />} />
-          
-          {/* Rute Lainnya */}
-          <Route path="/lapor" element={<LaporDummy />} />
         </Routes>
       </div>
     </Router>

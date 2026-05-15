@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, cubicBezier, type Variants } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -12,7 +12,6 @@ import {
   Users,
   ChevronRight,
   BarChart3,
-  MapPin,
   Layers,
   Lock,
   TrendingUp,
@@ -24,14 +23,14 @@ import {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-const EASE_SPRING = [0.16, 1, 0.3, 1];
+const EASE_SPRING = cubicBezier(0.16, 1, 0.3, 1);
 
-const STAGGER_CONTAINER = {
+const STAGGER_CONTAINER: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.09, delayChildren: 0.15 } },
 };
 
-const FADE_UP = {
+const FADE_UP: Variants = {
   hidden: { opacity: 0, y: 48, filter: "blur(4px)" },
   show: {
     opacity: 1,
@@ -90,13 +89,13 @@ function Navbar() {
 
         <div className="hidden md:flex items-center gap-1">
           {["Layanan", "Statistik", "Pengumuman", "Bantuan"].map((item) => (
-            <a
+            <button
               key={item}
-              href="#"
+              type="button"
               className="text-[13px] font-medium text-white/50 hover:text-white/90 px-4 py-2 rounded-lg hover:bg-white/[0.06] transition-all duration-200"
             >
               {item}
-            </a>
+            </button>
           ))}
         </div>
 
@@ -165,13 +164,13 @@ function Aurora() {
 
 // ─── FLOATING UI CARDS ────────────────────────────────────────────────────────
 
-function ProgressBar({ value, delay = 0 }: { value: number; delay?: number }) {
+function ProgressBar({ value, delay = 0 }: Readonly<{ value: number; delay?: number }>) {
   return (
     <div className="h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${value}%` }}
-        transition={{ duration: 1.6, delay: 1.0 + delay, ease: EASE_SPRING }}
+        transition={{ duration: 1.6, delay: 1 + delay, ease: EASE_SPRING }}
         className="h-full bg-gradient-to-r from-[#4F6EF7] to-[#7C3AED] rounded-full"
       />
     </div>
@@ -233,33 +232,39 @@ function CardMainApplication() {
       </div>
 
       <div className="flex items-center gap-1.5">
-        {["Terima", "Verifikasi", "TTD", "Selesai"].map((step, i) => (
-          <div key={step} className="flex items-center flex-1 min-w-0">
-            <div className="flex flex-col items-center gap-1.5 w-full">
-              <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  i < 2
-                    ? "bg-[#4F6EF7] shadow-[0_0_8px_rgba(79,110,247,0.5)]"
-                    : i === 2
-                    ? "bg-amber-400/30 border border-amber-400/50"
-                    : "bg-white/[0.06] border border-white/10"
-                }`}
-              >
-                {i < 2 ? (
-                  <CheckCircle2 className="w-3 h-3 text-white" />
-                ) : (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
-                )}
+        {["Terima", "Verifikasi", "TTD", "Selesai"].map((step, i) => {
+          const isDone = i < 2;
+          const isCurrent = i === 2;
+
+          let circleClass = "bg-white/[0.06] border border-white/10";
+          if (isDone) {
+            circleClass = "bg-[#4F6EF7] shadow-[0_0_8px_rgba(79,110,247,0.5)]";
+          } else if (isCurrent) {
+            circleClass = "bg-amber-400/30 border border-amber-400/50";
+          }
+
+          return (
+            <div key={step} className="flex items-center flex-1 min-w-0">
+              <div className="flex flex-col items-center gap-1.5 w-full">
+                <div
+                  className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${circleClass}`}
+                >
+                  {isDone ? (
+                    <CheckCircle2 className="w-3 h-3 text-white" />
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                  )}
+                </div>
+                <p className="text-[9px] font-bold text-white/30 text-center">{step}</p>
               </div>
-              <p className="text-[9px] font-bold text-white/30 text-center">{step}</p>
+              {i < 3 && (
+                <div
+                  className={`h-px flex-1 mb-4 mx-1 ${i < 1 ? "bg-[#4F6EF7]/40" : "bg-white/[0.06]"}`}
+                />
+              )}
             </div>
-            {i < 3 && (
-              <div
-                className={`h-px flex-1 mb-4 mx-1 ${i < 1 ? "bg-[#4F6EF7]/40" : "bg-white/[0.06]"}`}
-              />
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </motion.div>
   );
@@ -365,7 +370,7 @@ function SecurityBadge() {
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 1.0, duration: 0.5, ease: EASE_SPRING }}
+      transition={{ delay: 1, duration: 0.5, ease: EASE_SPRING }}
       className="absolute top-0 right-8 bg-[#0C1019]/95 backdrop-blur-xl border border-white/[0.07] rounded-xl px-3 py-2 z-40 flex items-center gap-2"
       style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)" }}
     >
@@ -520,7 +525,7 @@ function Hero() {
               <div className="flex -space-x-2.5">
                 {["BW", "SA", "MR", "DP"].map((initials, i) => (
                   <div
-                    key={i}
+                    key={initials}
                     className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4F6EF7] to-[#7C3AED] border-2 border-[#080B14] flex items-center justify-center text-[9px] font-bold text-white"
                     style={{ backgroundImage: `hue-rotate(${i * 40}deg)` }}
                   >
@@ -642,42 +647,48 @@ function FeaturesSection() {
     },
   ];
 
-  const colorMap: Record<string, { icon: string; tag: string; border: string; glow: string }> = {
+  const colorMap: Record<string, { icon: string; tag: string; border: string; glow: string; radial: string }> = {
     blue: {
       icon: "text-[#4F6EF7] bg-[#4F6EF7]/10 border-[#4F6EF7]/20",
       tag: "text-[#4F6EF7] bg-[#4F6EF7]/10",
       border: "hover:border-[#4F6EF7]/25",
       glow: "hover:shadow-[0_8px_40px_rgba(79,110,247,0.1)]",
+      radial: "rgba(79,110,247,0.06)",
     },
     violet: {
       icon: "text-violet-400 bg-violet-400/10 border-violet-400/20",
       tag: "text-violet-400 bg-violet-400/10",
       border: "hover:border-violet-400/25",
       glow: "hover:shadow-[0_8px_40px_rgba(139,92,246,0.1)]",
+      radial: "rgba(139,92,246,0.06)",
     },
     cyan: {
       icon: "text-cyan-400 bg-cyan-400/10 border-cyan-400/20",
       tag: "text-cyan-400 bg-cyan-400/10",
       border: "hover:border-cyan-400/25",
       glow: "hover:shadow-[0_8px_40px_rgba(34,211,238,0.1)]",
+      radial: "rgba(34,211,238,0.06)",
     },
     green: {
       icon: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
       tag: "text-emerald-400 bg-emerald-400/10",
       border: "hover:border-emerald-400/25",
       glow: "hover:shadow-[0_8px_40px_rgba(52,211,153,0.1)]",
+      radial: "rgba(52,211,153,0.06)",
     },
     amber: {
       icon: "text-amber-400 bg-amber-400/10 border-amber-400/20",
       tag: "text-amber-400 bg-amber-400/10",
       border: "hover:border-amber-400/25",
       glow: "hover:shadow-[0_8px_40px_rgba(251,191,36,0.1)]",
+      radial: "rgba(251,191,36,0.06)",
     },
     red: {
       icon: "text-rose-400 bg-rose-400/10 border-rose-400/20",
       tag: "text-rose-400 bg-rose-400/10",
       border: "hover:border-rose-400/25",
       glow: "hover:shadow-[0_8px_40px_rgba(251,113,133,0.1)]",
+      radial: "rgba(251,113,133,0.06)",
     },
   };
 
@@ -689,12 +700,12 @@ function FeaturesSection() {
     <section ref={ref} className="relative py-32 overflow-hidden bg-[#080B14]">
       <NoiseTexture />
       <motion.div
-        style={{ y }}
-        className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
+          y,
           background: "radial-gradient(circle, rgba(79,110,247,0.06) 0%, transparent 70%)",
           filter: "blur(60px)",
         }}
+        className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none"
       />
 
       <div className="max-w-7xl mx-auto px-8">
@@ -735,14 +746,7 @@ function FeaturesSection() {
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   style={{
-                    background: `radial-gradient(circle at 50% 0%, ${
-                      color === "blue" ? "rgba(79,110,247,0.06)" :
-                      color === "violet" ? "rgba(139,92,246,0.06)" :
-                      color === "cyan" ? "rgba(34,211,238,0.06)" :
-                      color === "green" ? "rgba(52,211,153,0.06)" :
-                      color === "amber" ? "rgba(251,191,36,0.06)" :
-                      "rgba(251,113,133,0.06)"
-                    } 0%, transparent 60%)`,
+                    background: `radial-gradient(circle at 50% 0%, ${c.radial} 0%, transparent 60%)`,
                   }}
                 />
                 <div className="flex items-start justify-between mb-5">
@@ -884,13 +888,13 @@ function Footer() {
         </p>
         <div className="flex gap-6">
           {["Tentang", "Bantuan", "Privasi", "Status"].map((l) => (
-            <a
+            <button
               key={l}
-              href="#"
+              type="button"
               className="text-[12px] text-white/25 hover:text-white/60 transition-colors font-semibold"
             >
               {l}
-            </a>
+            </button>
           ))}
         </div>
       </div>

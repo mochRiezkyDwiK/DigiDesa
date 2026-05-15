@@ -24,7 +24,7 @@ import {
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 
-const EASE_SPRING = [0.16, 1, 0.3, 1];
+const EASE_SPRING: any = [0.16, 1, 0.3, 1];
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
