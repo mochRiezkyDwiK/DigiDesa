@@ -42,29 +42,28 @@ export default function Lapor() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased">
-      <div className="flex lg:pl-72">
-        {/* ── HEADER ── */}
-        <header className="h-20 bg-white border-b border-gray-200 sticky top-0 z-50 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate('/dashboard-warga')}
-              className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft size={20} strokeWidth={2} />
-            </button>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Sistem Pengaduan</h1>
-              <p className="text-sm text-gray-500">Pemerintah Desa</p>
-            </div>
+    <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased mt-20">
+      {/* ── HEADER ── */}
+      <header className="h-20 bg-white border-b border-gray-200 sticky top-0 z-50 px-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/dashboard-warga')}
+            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft size={20} strokeWidth={2} />
+          </button>
+          <div className="border-l-2 border-gray-200 pl-4">
+            <h1 className="text-lg font-semibold text-gray-900">Sistem Pengaduan</h1>
+            <p className="text-sm text-gray-500">Pemerintah Desa</p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
-            <Info size={16} className="text-blue-600" />
-            <p className="text-xs font-medium text-blue-800">Proses 3-5 hari kerja</p>
-          </div>
-        </header>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
+          <Info size={16} className="text-blue-600" />
+          <p className="text-xs font-medium text-blue-800">Proses 3-5 hari kerja</p>
+        </div>
+      </header>
 
-        <main className="max-w-4xl mx-auto px-8 pt-16">
+      <main className="max-w-5xl mx-auto px-8 pt-16 pb-16">
           {step === 1 ? (
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-16">
               <motion.div initial="hidden" animate="visible" variants={FADE_UP} custom={0} className="lg:col-span-2">
@@ -210,7 +209,6 @@ export default function Lapor() {
             </motion.div>
           )}
         </main>
-      </div>
     </div>
   );
 }

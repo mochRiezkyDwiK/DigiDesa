@@ -96,26 +96,26 @@ export default function Layanan() {
     <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased pb-20">
       
       {/* ── HEADER LAYANAN ── */}
-      <section className="bg-slate-900 pt-16 pb-20 px-8 relative overflow-hidden">
+      <section className="bg-white pt-16 pb-20 px-8 relative overflow-hidden border-b border-slate-100">
         {/* Tombol Kembali (Navigasi Utama) */}
         <div className="max-w-6xl mx-auto mb-12 relative z-20">
             <motion.button 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={() => navigate('/dashboard-warga')}
-              className="flex items-center gap-3 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white transition-all group"
+              className="flex items-center gap-3 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl transition-all"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" strokeWidth={3} />
               <span className="text-xs font-black uppercase tracking-widest">Kembali ke Dashboard</span>
             </motion.button>
         </div>
 
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600 rounded-full blur-[100px] opacity-20 -mr-20 -mt-20" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full blur-[100px] opacity-40 -mr-20 -mt-20" />
         
         <div className="max-w-6xl mx-auto relative z-10">
           <motion.div initial="hidden" animate="visible" variants={FADE_UP} custom={0}>
-            <span className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">Katalog Layanan Digital</span>
-            <h1 className="text-4xl md:text-5xl font-black text-white mt-6 tracking-tighter leading-none">
+            <span className="px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">Katalog Layanan Digital</span>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 mt-6 tracking-tighter leading-none">
               Solusi Administrasi <br/> <span className="text-blue-500 font-serif italic">Satu Pintu.</span>
             </h1>
           </motion.div>
@@ -128,7 +128,7 @@ export default function Layanan() {
               placeholder="Cari layanan (misal: Domisili, Usaha...)" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/10 border border-white/10 rounded-[2rem] py-5 pl-14 pr-6 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-xl transition-all"
+              className="w-full bg-slate-100 border border-slate-200 rounded-[2rem] py-5 pl-14 pr-6 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
             />
           </motion.div>
         </div>

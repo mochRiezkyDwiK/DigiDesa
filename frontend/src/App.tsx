@@ -11,6 +11,7 @@ import Surat from "./pages/client/Surat";
 import TransparansiAnggaran from "./pages/client/TransparansiAnggaran";
 import Pengumuman from "./pages/client/pengumuman";
 import Bantuan from "./pages/client/bantuan";
+import KebijakanPrivasi from "./pages/client/KebijakanPrivasi";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -52,6 +53,8 @@ function App() {
 
           <Route path="/bantuan" element={<Bantuan />} />
 
+          <Route path="/kebijakan-privasi" element={<KebijakanPrivasi />} />
+
           <Route path="/admin" element={<AdminDashboard />} />
 
           <Route path="/admin/validasi" element={<AdminValidasiSurat />} />
@@ -63,9 +66,6 @@ function App() {
           <Route path="/admin/keuangan" element={<AdminKeuangan />} />
 
           <Route path="/admin/pengaturan" element={<AdminPengaturan />} />
-          
-          {/* Rute Lainnya */}
-          <Route path="/lapor" element={<LaporDummy />} />
         </Routes>
     </div>
   );

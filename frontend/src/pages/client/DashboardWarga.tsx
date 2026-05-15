@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom"; // 1. Import Navigate
-import { 
-  LayoutDashboard, 
-  FileText, 
-  MessageSquare, 
-  User, 
-  Bell, 
+import {
+  LayoutDashboard,
+  FileText,
+  MessageSquare,
+  User,
+  Bell,
   Search,
   Plus,
   Clock,
   CheckCircle2,
   ChevronRight,
-  TrendingUp, 
+  TrendingUp,
   Activity,
   ShieldCheck,
   CreditCard,
@@ -23,6 +23,7 @@ import {
   Zap
 } from "lucide-react";
 import { EASE_SPRING } from "../../constants/animation";
+import { div } from "framer-motion/client";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -54,56 +55,55 @@ export default function DashboardWarga() {
 
   return (
     <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased">
-      <div className="flex lg:pl-72">
-        {/* ── MAIN CONTENT ── */}
-        <main className="flex-1 overflow-y-auto relative h-screen">
-          <header className="h-24 bg-white/40 backdrop-blur-xl border-b border-slate-100/50 sticky top-0 z-40 px-8 sm:px-12 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:block relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
-                <input 
-                  type="text" 
-                  placeholder="Cari layanan desa..." 
-                  className="bg-slate-100/50 border-none rounded-2xl py-2.5 pl-11 pr-4 text-xs font-medium focus:ring-2 focus:ring-blue-500/10 w-64 transition-all"
-                />
-              </div>
-              <button className="relative w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all">
-                <Bell size={20} strokeWidth={2} />
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white" />
-              </button>
-              <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
-                <div className="text-right hidden sm:block">
-                  <p className="text-[13px] font-black text-slate-900 leading-none">Budi Santoso</p>
-                  <p className="text-[10px] font-bold text-slate-400 mt-1">RT 01 / RW 10</p>
-                </div>
-                <img className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-4 ring-slate-50" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" alt="Avatar" />
-              </div>
+      {/* ── MAIN CONTENT ── */}
+      <main className="flex-1 overflow-y-auto relative h-screen">
+        <header className="h-24 bg-white/40 backdrop-blur-xl border-b border-slate-100/50 sticky top-0 z-40 px-8 sm:px-12 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:block relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Cari layanan desa..."
+                className="bg-slate-100/50 border-none rounded-2xl py-2.5 pl-11 pr-4 text-xs font-medium focus:ring-2 focus:ring-blue-500/10 w-64 transition-all"
+              />
             </div>
-          </header>
+            <button className="relative w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all">
+              <Bell size={20} strokeWidth={2} />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white" />
+            </button>
+            <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
+              <div className="text-right hidden sm:block">
+                <p className="text-[13px] font-black text-slate-900 leading-none">Budi Santoso</p>
+                <p className="text-[10px] font-bold text-slate-400 mt-1">RT 01 / RW 10</p>
+              </div>
+              <img className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-4 ring-slate-50" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" alt="Avatar" />
+            </div>
+          </div>
+        </header>
 
         {/* CONTENT AREA */}
         <div className="p-8 sm:p-12 space-y-10 max-w-7xl mx-auto">
-          
+
           {/* WELCOME SECTION */}
-          <motion.section 
+          <motion.section
             initial="hidden" animate="visible" variants={FADE_UP} custom={0}
-            className="relative p-10 bg-slate-900 rounded-[3rem] overflow-hidden shadow-[0_20px_50px_-15px_rgba(15,23,42,0.3)]"
+            className="relative p-10 bg-white rounded-[3rem] border border-slate-100 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.05)]"
           >
-            <div className="absolute top-0 right-0 w-[40%] h-full bg-gradient-to-l from-blue-600/30 to-transparent" />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px]" />
-            
+            <div className="absolute top-0 right-0 w-[40%] h-full bg-gradient-to-l from-blue-600/10 to-transparent" />
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]" />
+
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div>
-                <span className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">Automasi Desa Digital</span>
-                <h2 className="text-4xl font-black text-white mt-6 tracking-tighter leading-none">
-                  Layanan Publik <br/> <span className="text-blue-500">Serba Instan.</span>
+                <span className="px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">Automasi Desa Digital</span>
+                <h2 className="text-4xl font-black text-slate-900 mt-6 tracking-tighter leading-none">
+                  Layanan Publik <br /> <span className="text-blue-600">Serba Instan.</span>
                 </h2>
-                <p className="text-slate-400 text-sm max-w-sm mt-4 leading-relaxed font-medium">
+                <p className="text-slate-500 text-sm max-w-sm mt-4 leading-relaxed font-medium">
                   RT dan RW kini otomatis mendapatkan laporan tembusan. Anda tidak perlu lagi meminta validasi fisik secara manual.
                 </p>
               </div>
               <div className="flex gap-4">
-                <motion.button 
+                <motion.button
                   onClick={() => navigate('/layanan')} // Pasang tombol Hero
                   whileHover={{ y: -5 }}
                   className="px-8 py-4 bg-blue-600 text-white font-black rounded-2xl text-sm shadow-xl shadow-blue-500/25 hover:bg-blue-500 transition-all flex items-center gap-3"
@@ -117,10 +117,10 @@ export default function DashboardWarga() {
           {/* QUICK STATS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {QUICK_STATS.map((s, i) => (
-              <motion.div 
+              <motion.div
                 key={s.label} initial="hidden" animate="visible" variants={FADE_UP} custom={i + 1}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                onClick={() => { if(s.path !== "#") navigate(s.path) }} // Pasang tombol Stats
+                onClick={() => { if (s.path !== "#") navigate(s.path) }} // Pasang tombol Stats
                 className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.03)] flex items-center gap-6 group cursor-pointer"
               >
                 <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 transition-colors">
@@ -137,19 +137,19 @@ export default function DashboardWarga() {
 
           {/* MAIN BENTO LAYOUT */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            
+
             {/* LEFT: PROGRESS SURAT */}
-            <motion.div 
+            <motion.div
               initial="hidden" animate="visible" variants={FADE_UP} custom={4}
               className="lg:col-span-2 space-y-6"
             >
               <div className="flex items-center justify-between px-2">
                 <h3 className="text-xl font-black text-slate-900 tracking-tight">Status Dokumen</h3>
-                <button 
+                <button
                   onClick={() => navigate('/layanan')}
                   className="text-[13px] font-black text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1"
                 >
-                  Semua Berkas <ChevronRight size={16} strokeWidth={3}/>
+                  Semua Berkas <ChevronRight size={16} strokeWidth={3} />
                 </button>
               </div>
 
@@ -170,7 +170,7 @@ export default function DashboardWarga() {
                         <div className="text-right hidden sm:block">
                           <p className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Progress Sistem</p>
                           <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <motion.div 
+                            <motion.div
                               initial={{ width: 0 }} animate={{ width: `${surat.progress}%` }} transition={{ duration: 1.5, delay: 0.5 }}
                               className="h-full bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"
                             />
@@ -194,7 +194,7 @@ export default function DashboardWarga() {
                   </div>
                   <h3 className="font-black text-slate-900 tracking-tight">Timeline Pelayanan Digital</h3>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative">
                   {[
                     { icon: Plus, label: "Submit Mandiri", desc: "Data dikirim ke server", c: "blue" },
@@ -220,15 +220,15 @@ export default function DashboardWarga() {
             </motion.div>
 
             {/* RIGHT: WIDGETS */}
-            <motion.div 
+            <motion.div
               initial="hidden" animate="visible" variants={FADE_UP} custom={5}
               className="space-y-10"
             >
               {/* NEWS CARD */}
-              <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative shadow-2xl shadow-blue-900/20 overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600 rounded-full blur-[60px] opacity-30" />
+              <div className="bg-white rounded-[3rem] p-10 text-slate-900 relative shadow-sm border border-slate-100 overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-[60px] opacity-70" />
                 <h3 className="text-xl font-black mb-8 tracking-tight flex items-center gap-3">
-                  <Activity size={22} className="text-blue-400" strokeWidth={3} /> Warta Desa
+                  <Activity size={22} className="text-blue-600" strokeWidth={3} /> Warta Desa
                 </h3>
                 <div className="space-y-8">
                   {[
@@ -242,7 +242,7 @@ export default function DashboardWarga() {
                     </div>
                   ))}
                 </div>
-                <button className="w-full mt-10 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all">
+                <button className="w-full mt-10 py-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all">
                   Arsip Berita
                 </button>
               </div>
@@ -250,7 +250,7 @@ export default function DashboardWarga() {
               {/* LOYALTY CARD */}
               <div className="bg-white rounded-[3rem] border border-slate-100 p-10 shadow-sm">
                 <h3 className="font-black text-slate-900 mb-8 flex items-center gap-3 tracking-tight">
-                   <TrendingUp size={22} className="text-indigo-600" strokeWidth={3} /> Kontribusi Warga
+                  <TrendingUp size={22} className="text-indigo-600" strokeWidth={3} /> Kontribusi Warga
                 </h3>
                 <div className="space-y-8">
                   <div>
@@ -274,7 +274,6 @@ export default function DashboardWarga() {
 
         </div>
       </main>
-      </div>
     </div>
-  );
+    );
 }
