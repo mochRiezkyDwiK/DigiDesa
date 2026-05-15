@@ -21,10 +21,7 @@ import {
   ArrowUpRight,
   Zap
 } from "lucide-react";
-
-// ─── CONFIGURATION ────────────────────────────────────────────────────────────
-
-const EASE_SPRING: any = [0.16, 1, 0.3, 1];
+import { EASE_SPRING } from "../../constants/animation";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -55,88 +52,33 @@ export default function DashboardWarga() {
   const navigate = useNavigate(); // 2. Inisialisasi navigate
 
   return (
-    <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased flex overflow-hidden">
-      
-      {/* ── SIDEBAR ── */}
-      <aside className="hidden lg:flex w-72 bg-white border-r border-slate-100 flex-col sticky top-0 h-screen z-50">
-        <div className="p-8 flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <ShieldCheck className="w-6 h-6 text-white" />
-          </div>
-          <span className="font-black text-slate-900 tracking-tighter text-2xl italic">DIGI<span className="text-blue-600">DESA</span></span>
-        </div>
-
-        <nav className="flex-1 px-6 space-y-1.5 mt-4">
-          {[
-            { n: "Ringkasan", i: LayoutDashboard, p: "/dashboard-warga" },
-            { n: "Layanan Surat", i: FileText, p: "/layanan" },
-            { n: "Laporan Saya", i: MessageSquare, p: "/lapor" },
-            { n: "Financial", i: CreditCard, p: "/finansial" },
-            { n: "Profil", i: User, p: "/profil" },
-          ].map((item) => (
-            <button
-              key={item.n}
-              onClick={() => {
-                setActiveTab(item.n);
-                if(item.p !== "#") navigate(item.p);
-              }}
-              className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-[13px] font-bold transition-all duration-300 ${
-                activeTab === item.n 
-                ? "bg-blue-600 text-white shadow-[0_10px_20px_-5px_rgba(37,99,235,0.3)] scale-[1.02]" 
-                : "text-slate-400 hover:bg-slate-50 hover:text-slate-900"
-              }`}
-            >
-              <item.i size={18} strokeWidth={2.5} />
-              {item.n}
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-6 border-t border-slate-50">
-          <button 
-            onClick={() => navigate('/login')}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[13px] font-bold text-red-400 hover:bg-red-50 transition-all"
-          >
-            <LogOut size={18} strokeWidth={2.5} />
-            Keluar Sistem
-          </button>
-        </div>
-      </aside>
-
-      {/* ── MAIN CONTENT ── */}
-      <main className="flex-1 overflow-y-auto relative h-screen">
-        
-        {/* HEADER */}
-        <header className="h-24 bg-white/40 backdrop-blur-xl border-b border-slate-100/50 sticky top-0 z-40 px-8 sm:px-12 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:block relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
-              <input 
-                type="text" 
-                placeholder="Cari layanan desa..." 
-                className="bg-slate-100/50 border-none rounded-2xl py-2.5 pl-11 pr-4 text-xs font-medium focus:ring-2 focus:ring-blue-500/10 w-64 transition-all"
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-full border border-amber-100">
-               <CalendarDays size={14} className="text-amber-600" />
-               <span className="text-[10px] font-bold text-amber-700 uppercase tracking-tight">Rabu, 29 April</span>
-            </div>
-            <button className="relative w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all">
-              <Bell size={20} strokeWidth={2} />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white" />
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
-              <div className="text-right hidden sm:block">
-                <p className="text-[13px] font-black text-slate-900 leading-none">Budi Santoso</p>
-                <p className="text-[10px] font-bold text-slate-400 mt-1">RT 01 / RW 10</p>
+    <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased">
+      <div className="flex lg:pl-72">
+        {/* ── MAIN CONTENT ── */}
+        <main className="flex-1 overflow-y-auto relative h-screen">
+          <header className="h-24 bg-white/40 backdrop-blur-xl border-b border-slate-100/50 sticky top-0 z-40 px-8 sm:px-12 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:block relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+                <input 
+                  type="text" 
+                  placeholder="Cari layanan desa..." 
+                  className="bg-slate-100/50 border-none rounded-2xl py-2.5 pl-11 pr-4 text-xs font-medium focus:ring-2 focus:ring-blue-500/10 w-64 transition-all"
+                />
               </div>
-              <img className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-4 ring-slate-50" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" alt="Avatar" />
+              <button className="relative w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all">
+                <Bell size={20} strokeWidth={2} />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white" />
+              </button>
+              <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
+                <div className="text-right hidden sm:block">
+                  <p className="text-[13px] font-black text-slate-900 leading-none">Budi Santoso</p>
+                  <p className="text-[10px] font-bold text-slate-400 mt-1">RT 01 / RW 10</p>
+                </div>
+                <img className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-4 ring-slate-50" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" alt="Avatar" />
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
         {/* CONTENT AREA */}
         <div className="p-8 sm:p-12 space-y-10 max-w-7xl mx-auto">
@@ -331,6 +273,7 @@ export default function DashboardWarga() {
 
         </div>
       </main>
+      </div>
     </div>
   );
 }

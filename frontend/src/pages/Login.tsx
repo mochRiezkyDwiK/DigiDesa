@@ -1,7 +1,8 @@
 import { useState, type SyntheticEvent, type ChangeEvent } from "react";
-import { motion, AnimatePresence, cubicBezier, type Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { EASE_SPRING, FADE_UP } from "../constants/animation";
 import { 
   Layers, 
   Lock, 
@@ -16,10 +17,7 @@ import {
   UserPlus
 } from "lucide-react";
 
-const EASE_SPRING = cubicBezier(0.16, 1, 0.3, 1);
-const API_URL = "http://localhost:5000/api/v1/auth"; 
-
-const FADE_UP: Variants = {
+const API_URL = "http://localhost:5000/api/v1/auth";
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
     opacity: 1,

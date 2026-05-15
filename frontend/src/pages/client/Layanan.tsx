@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import { EASE_SPRING } from "../../constants/animation";
 import { 
   FileText, 
   Search, 
@@ -17,11 +18,6 @@ import {
   MapPin,
   ArrowLeft // 2. Import ikon ArrowLeft
 } from "lucide-react";
-
-// ─── CONFIGURATION ────────────────────────────────────────────────────────────
-
-const EASE_SPRING: any = [0.16, 1, 0.3, 1];
-
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
