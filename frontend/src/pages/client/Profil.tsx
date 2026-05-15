@@ -39,14 +39,14 @@ export default function Profil() {
     <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased pb-20">
       
       {/* ── HEADER & COVER ── */}
-      <div className="h-64 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-indigo-900/50" />
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-600 rounded-full blur-[120px] opacity-20" />
+      <div className="h-64 bg-slate-100 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-white to-slate-100" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-100 rounded-full blur-[120px] opacity-60" />
         
-        <header className="max-w-6xl mx-auto px-8 pt-8 relative z-10 flex justify-between items-center text-white">
+        <header className="max-w-6xl mx-auto px-8 pt-8 relative z-10 flex justify-between items-center text-slate-900">
           <button 
             onClick={() => navigate('/dashboard-warga')}
-            className="flex items-center gap-3 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
+            className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-2xl text-slate-700 hover:bg-slate-50 transition-all group"
           >
             <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" strokeWidth={3} />
             <span className="text-[10px] font-black uppercase tracking-widest">Dashboard</span>
@@ -154,10 +154,10 @@ export default function Profil() {
             initial="hidden" animate="visible" variants={FADE_UP} custom={2}
             className="space-y-8"
           >
-            <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-xl shadow-slate-900/20">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600 rounded-full blur-[60px] opacity-20" />
+            <div className="bg-white rounded-[3rem] p-10 text-slate-900 relative overflow-hidden border border-slate-100 shadow-sm">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-[60px] opacity-70" />
               <h3 className="text-xl font-black mb-8 tracking-tight flex items-center gap-3">
-                <Building size={22} className="text-blue-400" strokeWidth={3} /> Wilayah RT/RW
+                <Building size={22} className="text-blue-600" strokeWidth={3} /> Wilayah RT/RW
               </h3>
               
               <div className="space-y-8">
@@ -175,10 +175,10 @@ export default function Profil() {
                 </div>
               </div>
 
-              <div className="mt-12 pt-8 border-t border-white/5">
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl">
-                  <CheckCircle2 className="text-emerald-400 shrink-0" size={20} />
-                  <p className="text-[10px] font-medium text-slate-300">Anda tercatat sebagai penduduk aktif di wilayah ini sejak 2018.</p>
+              <div className="mt-12 pt-8 border-t border-slate-100">
+                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
+                  <CheckCircle2 className="text-emerald-500 shrink-0" size={20} />
+                  <p className="text-[10px] font-medium text-slate-500">Anda tercatat sebagai penduduk aktif di wilayah ini sejak 2018.</p>
                 </div>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function Profil() {
               </div>
               <h4 className="text-lg font-black text-slate-900 tracking-tight">E-KTP Digital</h4>
               <p className="text-xs text-slate-500 mt-2 font-medium">QR-Code identitas Anda dapat dipindai oleh petugas desa.</p>
-              <button className="w-full mt-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-slate-900/20">
+              <button className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all">
                 Tampilkan QR-Code
               </button>
             </div>

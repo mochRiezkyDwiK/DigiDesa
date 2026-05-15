@@ -59,13 +59,13 @@ export default function Finansial() {
           {/* Card: Status Pembayaran Warga */}
           <motion.div 
             initial="hidden" animate="visible" variants={FADE_UP} custom={0}
-            className="lg:col-span-2 p-10 bg-slate-900 rounded-[3rem] text-white relative overflow-hidden shadow-2xl shadow-slate-900/20"
+            className="lg:col-span-2 p-10 bg-white rounded-[3rem] relative overflow-hidden border border-slate-100 shadow-sm"
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20 -mr-20 -mt-20" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] opacity-40 -mr-20 -mt-20" />
             <div className="relative z-10">
-              <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.2em]">Tagihan Bulan April 2026</p>
-              <h2 className="text-5xl font-black mt-4 tracking-tighter">Rp 50.000</h2>
-              <p className="text-slate-400 text-sm mt-2 font-medium">Iuran Kebersihan & Keamanan (RT 01)</p>
+              <p className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em]">Tagihan Bulan April 2026</p>
+              <h2 className="text-5xl font-black mt-4 tracking-tighter text-slate-900">Rp 50.000</h2>
+              <p className="text-slate-500 text-sm mt-2 font-medium">Iuran Kebersihan & Keamanan (RT 01)</p>
               
               <div className="mt-10 flex flex-wrap gap-4">
                 <button className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2">
@@ -105,28 +105,28 @@ export default function Finansial() {
         {/* ── ALUR DANA SECTION ── */}
         <motion.div 
           initial="hidden" animate="visible" variants={FADE_UP} custom={2}
-          className="p-10 bg-blue-600 rounded-[3.5rem] text-white relative overflow-hidden"
+          className="p-10 bg-slate-50 rounded-[3.5rem] text-slate-900 relative overflow-hidden border border-slate-100"
         >
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
             <div className="flex items-center gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
-                <Wallet className="text-white" size={28} />
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-slate-200 shrink-0">
+                <Wallet className="text-blue-600" size={28} />
               </div>
               <div>
                 <h4 className="font-black text-lg leading-tight">Warga ke RT</h4>
-                <p className="text-blue-100 text-xs mt-1">Pembayaran terverifikasi otomatis oleh sistem.</p>
+                <p className="text-slate-500 text-xs mt-1">Pembayaran terverifikasi otomatis oleh sistem.</p>
               </div>
             </div>
             <div className="flex items-center justify-center">
-              <ChevronRight className="text-blue-300 hidden md:block" size={32} />
+              <ChevronRight className="text-slate-300 hidden md:block" size={32} />
             </div>
             <div className="flex items-center gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shrink-0">
-                <TrendingUp className="text-white" size={28} />
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-slate-200 shrink-0">
+                <TrendingUp className="text-blue-600" size={28} />
               </div>
               <div>
                 <h4 className="font-black text-lg leading-tight">RT ke RW & Desa</h4>
-                <p className="text-blue-100 text-xs mt-1">Laporan finansial terpusat untuk transparansi publik.</p>
+                <p className="text-slate-500 text-xs mt-1">Laporan finansial terpusat untuk transparansi publik.</p>
               </div>
             </div>
           </div>
@@ -194,9 +194,9 @@ export default function Finansial() {
                   </div>
                 </div>
               ))}
-              <div className="pt-4 p-5 bg-slate-900 rounded-[2rem] text-center">
-                <p className="text-white text-[10px] font-black uppercase tracking-[0.2em] mb-2">E-Audit Desa</p>
-                <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold text-[10px]">
+              <div className="pt-4 p-5 bg-white rounded-[2rem] text-center border border-slate-100">
+                <p className="text-slate-700 text-[10px] font-black uppercase tracking-[0.2em] mb-2">E-Audit Desa</p>
+                <div className="flex items-center justify-center gap-2 text-emerald-600 font-bold text-[10px]">
                   <CheckCircle2 size={12} /> Laporan telah diverifikasi Desa
                 </div>
               </div>

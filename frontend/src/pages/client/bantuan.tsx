@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { EASE_SPRING, STAGGER_CONTAINER, FADE_UP } from "../../constants/animation";
+import { EASE_SPRING} from "../../constants/animation";
 import {
     Phone,
     Mail,
@@ -8,8 +8,6 @@ import {
     MessageCircle,
     HelpCircle,
     Send,
-    ChevronRight,
-    Users,
     FileText,
     Shield,
     Headphones,
