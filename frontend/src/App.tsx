@@ -21,50 +21,34 @@ import AdminPenduduk from "./pages/admin/AdminPenduduk";
 import AdminKeuangan from "./pages/admin/AdminKeuangan";
 import AdminPengaturan from "./pages/admin/AdminPengaturan";
 
-// Halaman Dummy Sementara (Hanya yang benar-benar belum ada filenya)
-const LaporDummy = () => <div className="p-10 text-center text-2xl font-bold text-slate-800">Halaman Lapor (Sedang Dibangun)</div>;
-
 function App() {
   return (
     <div className="font-sans text-slate-900 antialiased bg-slate-50 min-h-screen">
       <Routes>
           {/* Rute Utama */}
           <Route path="/" element={<Home />} />
-          
-          {/* Rute Login - Pastikan merujuk ke file Login.tsx yang premium tadi */}
           <Route path="/login" element={<Login />} />
           
-          {/* Rute Dashboard - Pastikan file DashboardWarga.tsx sudah di-save */}
+          {/* Rute Warga */}
           <Route path="/dashboard-warga" element={<DashboardWarga />} />
-
           <Route path="/layanan" element={<Layanan />} />
-
           <Route path="/lapor" element={<Lapor />} />
-
           <Route path="/surat" element={<Surat />} />
-
           <Route path="/finansial" element={<Finansial />} />
-
           <Route path="/profil" element={<Profil />} />
-
           <Route path="/transparansi-anggaran" element={<TransparansiAnggaran />} />
-
           <Route path="/pengumuman" element={<Pengumuman />} />
-
           <Route path="/bantuan" element={<Bantuan />} />
 
           <Route path="/kebijakan-privasi" element={<KebijakanPrivasi />} />
 
           <Route path="/admin" element={<AdminDashboard />} />
 
+          {/* Rute Admin */}
           <Route path="/admin/validasi" element={<AdminValidasiSurat />} />
-
           <Route path="/admin/laporan" element={<AdminLaporan />} />
-
           <Route path="/admin/penduduk" element={<AdminPenduduk />} />
-
           <Route path="/admin/keuangan" element={<AdminKeuangan />} />
-
           <Route path="/admin/pengaturan" element={<AdminPengaturan />} />
         </Routes>
     </div>

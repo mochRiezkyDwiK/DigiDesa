@@ -9,7 +9,6 @@ import {
   Bell,
   Search,
   Plus,
-  Clock,
   CheckCircle2,
   ChevronRight,
   TrendingUp,
