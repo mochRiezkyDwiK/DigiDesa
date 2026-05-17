@@ -19,4 +19,17 @@ export class Finance {
 
     @CreateDateColumn()
     created_at: Date;
+
+        // Tambahkan field ini di dalam class Finance
+    @Column({ nullable: true })
+    recipient: string;
+
+    @Column({ nullable: true })
+    evidence_url: string;
+
+    @Column({ type: "decimal", precision: 15, scale: 2, default: 0 })
+    current_balance: number;
+
+    @Column({ type: "date", nullable: true })
+    transaction_date: string;
 }

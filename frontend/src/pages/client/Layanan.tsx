@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 import { EASE_SPRING } from "../../constants/animation";
 import { 
   FileText, 
   Search, 
-  ChevronRight, 
   ArrowRight,
-  ShieldCheck, 
   Zap,
   Info,
   Clock,
@@ -16,8 +14,9 @@ import {
   Flag,
   Users,
   MapPin,
-  ArrowLeft // 2. Import ikon ArrowLeft
+  ArrowLeft 
 } from "lucide-react";
+
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
@@ -27,10 +26,9 @@ const FADE_UP = {
   })
 };
 
-// ─── DUMMY DATA LAYANAN ───────────────────────────────────────────────────────
-
 const KATEGORI = ["Semua", "Surat Keterangan", "Kependudukan", "Laporan & Aspirasi"];
 
+// ─── DAFTAR LAYANAN DENGAN PEMETAAN RUTING AKTIF ─────────────────────────────
 const DAFTAR_LAYANAN = [
   { 
     title: "Surat Keterangan Domisili", 
@@ -38,7 +36,9 @@ const DAFTAR_LAYANAN = [
     category: "Surat Keterangan",
     time: "Instan",
     icon: MapPin,
-    color: "blue"
+    color: "blue",
+    path: "/buat-surat", // Menuju rute komponen Surat.tsx kamu
+    state: { jenisSurat: "SKD" } // Mengirim state jenis surat ke form
   },
   { 
     title: "Surat Keterangan Usaha (SKU)", 
@@ -46,7 +46,9 @@ const DAFTAR_LAYANAN = [
     category: "Surat Keterangan",
     time: "1 Hari Kerja",
     icon: CreditCard,
-    color: "indigo"
+    color: "indigo",
+    path: "/buat-surat",
+    state: { jenisSurat: "SKU" }
   },
   { 
     title: "Update Data Kartu Keluarga", 
@@ -54,7 +56,8 @@ const DAFTAR_LAYANAN = [
     category: "Kependudukan",
     time: "Sistem Terpusat",
     icon: Users,
-    color: "violet"
+    color: "violet",
+    path: "#" // Standby placeholder jika belum ada halamannya Ky
   },
   { 
     title: "Lapor Infrastruktur Rusak", 
@@ -62,7 +65,8 @@ const DAFTAR_LAYANAN = [
     category: "Laporan & Aspirasi",
     time: "24/7",
     icon: Flag,
-    color: "red"
+    color: "red",
+    path: "/lapor" // Menuju halaman pengaduan keluhan warga
   },
   { 
     title: "Surat Pengantar Nikah", 
@@ -70,7 +74,9 @@ const DAFTAR_LAYANAN = [
     category: "Surat Keterangan",
     time: "2 Hari Kerja",
     icon: FileText,
-    color: "blue"
+    color: "blue",
+    path: "/buat-surat",
+    state: { jenisSurat: "SKD" } // Dialihkan sementara ke form surat kependudukan
   },
   { 
     title: "Pendaftaran Warga Baru", 
@@ -78,36 +84,51 @@ const DAFTAR_LAYANAN = [
     category: "Kependudukan",
     time: "Validasi Digital",
     icon: UserCheck,
-    color: "violet"
+    color: "violet",
+    path: "#"
   }
 ];
 
 export default function Layanan() {
   const [filter, setFilter] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate(); // 3. Inisialisasi navigate
+  const navigate = useNavigate(); 
 
   const filteredServices = DAFTAR_LAYANAN.filter(s => 
     (filter === "Semua" || s.category === filter) &&
     s.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // ── BARU: Handler Fungsi Klik Kartu Layanan Dinamis ──
+  const handleServiceClick = (service: any) => {
+    if (service.path === "#") {
+      alert(`Layanan "${service.title}" saat ini sedang dipersiapkan oleh sistem pusat kelurahan.`);
+      return;
+    }
+    
+    if (service.state) {
+      // Jika memiliki parameter lemparan data (seperti jenisSurat), kirim lewat state router
+      navigate(service.path, { state: service.state });
+    } else {
+      navigate(service.path);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased pb-20">
       
       {/* ── HEADER LAYANAN ── */}
       <section className="bg-slate-900 pt-16 pb-20 px-8 relative overflow-hidden">
-        {/* Tombol Kembali (Navigasi Utama) */}
         <div className="max-w-6xl mx-auto mb-12 relative z-20">
-            <motion.button 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              onClick={() => navigate('/dashboard-warga')}
-              className="flex items-center gap-3 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white transition-all group"
-            >
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" strokeWidth={3} />
-              <span className="text-xs font-black uppercase tracking-widest">Kembali ke Dashboard</span>
-            </motion.button>
+          <motion.button 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => navigate('/dashboard-warga')}
+            className="flex items-center gap-3 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white transition-all group"
+          >
+            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" strokeWidth={3} />
+            <span className="text-xs font-black uppercase tracking-widest">Kembali ke Dashboard</span>
+          </motion.button>
         </div>
 
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600 rounded-full blur-[100px] opacity-20 -mr-20 -mt-20" />
@@ -165,11 +186,12 @@ export default function Layanan() {
               variants={FADE_UP}
               custom={i}
               whileHover={{ y: -10 }}
+              onClick={() => handleServiceClick(service)} // ── BARU: Trigger aksi klik pada card ──
               className="group bg-white p-8 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.04)] hover:border-blue-200 transition-all cursor-pointer flex flex-col justify-between"
             >
               <div>
-                <div className={`w-14 h-14 rounded-2xl bg-${service.color}-50 flex items-center justify-center mb-8 group-hover:bg-blue-600 transition-all duration-500 shadow-sm`}>
-                  <service.icon className={`text-${service.color}-600 group-hover:text-white transition-colors`} size={26} strokeWidth={2.5} />
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-8 group-hover:bg-blue-600 transition-all duration-500 shadow-sm text-blue-600 group-hover:text-white">
+                  <service.icon size={26} strokeWidth={2.5} />
                 </div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md leading-none">{service.category}</span>
@@ -217,7 +239,7 @@ export default function Layanan() {
               Sistem kami terhubung langsung dengan database kependudukan desa. Pastikan data profil Anda sudah terverifikasi untuk menggunakan layanan instan.
             </p>
           </div>
-          <button className="whitespace-nowrap px-6 py-3 bg-white border border-slate-200 rounded-xl text-xs font-black hover:border-blue-500 hover:text-blue-600 transition-all">
+          <button onClick={() => navigate('/profile')} className="whitespace-nowrap px-6 py-3 bg-white border border-slate-200 rounded-xl text-xs font-black hover:border-blue-500 hover:text-blue-600 transition-all">
             Cek Status Profil
           </button>
         </div>

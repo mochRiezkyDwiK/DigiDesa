@@ -5,6 +5,7 @@ import { Finance } from "../models/Finance";
 import { Keluarga } from "../models/Keluarga";
 import { Report } from "../models/Report";
 import dotenv from "dotenv";
+import { Surat } from "../models/Surat";
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ export const AppDataSource = new DataSource({
     url: DATABASE_URL,
     synchronize: false, // Biar tabel otomatis dibuat di HeidiSQL
     logging: false,
-    entities: [User, Finance, Report, Wilayah, Keluarga ],
+    entities: [User, Finance, Report, Wilayah, Keluarga, Surat ],
     // LOGIC MATIKAN SSL JIKA LOKAL:
     ssl: isLocal ? false : {
         rejectUnauthorized: true
