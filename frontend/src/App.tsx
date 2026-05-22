@@ -10,7 +10,7 @@ import Home from "./pages/client/Home";
 import Login from "./pages/Login";
 import DashboardWarga from "./pages/client/DashboardWarga";
 import Layanan from "./pages/client/Layanan";
-import Lapor from "./pages/client/Lapor";
+import Lapor from "./routes/lapor";
 import Finansial from "./pages/client/Finansial";
 import Profil from "./pages/client/Profil";
 import Surat from "./pages/client/Surat";

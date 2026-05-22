@@ -1,5 +1,7 @@
 import { Router } from "express";
+import { createPengaduan } from "../controllers/pengaduanController";
 import { authenticateToken } from "../middleware/authMiddleware";
+import { upload } from "../middleware/uploadMiddleware";
 
 const router = Router();
 
@@ -9,4 +11,6 @@ router.get("/profile", authenticateToken, (req, res) => {
     res.json({ message: "Ini data rahasia profil kamu", user: (req as any).user });
 });
 
-export default router;
+    router.post("/pengaduan", upload.single("bukti_visual"), createPengaduan);
+
+    export default router;

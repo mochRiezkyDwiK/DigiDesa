@@ -44,6 +44,8 @@ export default function Surat() {
     keperluan: "", 
     noHp: ""
   });
+  const [apiResponse, setApiResponse] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // ── SINKRONISASI ASLI DARI DATABASE MYSQL ──
   useEffect(() => {

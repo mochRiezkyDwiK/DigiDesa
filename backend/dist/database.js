@@ -1,13 +1,20 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const pg_1 = require("pg");
+const promise_1 = __importDefault(require("mysql2/promise"));
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.config)();
-const pool = new pg_1.Pool({
-    user: process.env.DB_USER || 'postgres',
+const pool = promise_1.default.createPool({
     host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'digidesa',
+    user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || 'password',
-    port: Number(process.env.DB_PORT) || 5432,
+    database: process.env.DB_NAME || 'digidesa',
+    port: Number(process.env.DB_PORT) || 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 exports.default = pool;
+//# sourceMappingURL=database.js.map
