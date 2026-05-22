@@ -1,318 +1,409 @@
-import { useState, type SyntheticEvent, type ChangeEvent } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { EASE_SPRING, FADE_UP } from "../constants/animation";
-import { 
-  Layers, 
-  Lock, 
-  User, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-  ShieldCheck, 
-  ChevronLeft,
+import {
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  EyeOff,
   Loader2,
+  Lock,
+  ShieldCheck,
+  User,
+  Building2,
+  Fingerprint,
+  MapPin,
+  ChevronRight,
+  UserPlus,
   Phone,
-  UserPlus
+  CheckCircle2,
+  // TAMBAHAN IMPORT ICON UNTUK NAVBAR
+  ChevronDown,
+  MessageSquare,
+  FileText
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api/v1/auth";
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8, delay: i * 0.1, ease: EASE_SPRING }
-  })
+// IMBAL/IMPORT KOMPONEN STATS YANG BARU DI SINI
+import StatsWidget from "../components/StatsWidgets";
+
+const EASE = [0.22, 1, 0.36, 1];
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 };
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.6, ease: EASE },
+  },
+};
+
+const features = [
+  "Pengajuan surat online 24/7",
+  "Notifikasi status real-time",
+  "Arsip dokumen digital",
+  "Laporan transparan & akuntabel",
+];
+
+// ==========================================
+// FIX: KOMPONEN NAVBAR DI निकाला KE LUAR LOGIN
+// ==========================================
+function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [layananDropdown, setLayananDropdown] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (layananDropdown) {
+        setLayananDropdown(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [layananDropdown]);
+
+  return (
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-gray-900 border-b border-gray-800 shadow-sm"
+          : "bg-gray-900 border-b border-gray-800"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-slate-800 flex items-center justify-center border border-gray-500">
+            <Building2 className="w-5 h-5 text-white" />
+          </div>
+          <a href="/" className="flex flex-col">
+            <span className="font-extrabold text-slate-100 tracking-tight text-[1.1rem] leading-none">
+              Digi<span className="text-blue-700">Desa</span>
+            </span>
+            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Pemerintah Desa</span>
+          </a>
+        </div>
+
+        {/* Nav Links */}
+        <div className="hidden md:flex items-center gap-6">
+          {/* Dropdown Layanan */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLayananDropdown(!layananDropdown);
+              }}
+              className="text-sm font-medium text-gray-300 hover:text-blue-900 transition-colors flex items-center gap-1"
+            >
+              Layanan
+              <ChevronDown className={`w-4 h-4 transition-transform ${layananDropdown ? 'rotate-180' : ''}`} />
+            </button>
+
+            {layananDropdown && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-500 shadow-md py-2 z-50"
+              >
+                <button
+                  onClick={() => {
+                    navigate('/lapor');
+                    setLayananDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-blue-900 transition-colors flex items-center gap-3 border-b border-gray-200"
+                >
+                  <MessageSquare className="w-4 h-4 text-gray-600" />
+                  <div>
+                    <div className="font-medium text-gray-900">Layanan Pengaduan</div>
+                    <div className="text-xs text-gray-500">Laporan dan keluhan warga</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigate('/create-surat');
+                    setLayananDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-blue-900 transition-colors flex items-center gap-3"
+                >
+                  <FileText className="w-4 h-4 text-gray-600" />
+                  <div>
+                    <div className="font-medium text-gray-900">Pembuatan Surat</div>
+                    <div className="text-xs text-gray-500">Administrasi kependudukan</div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Menu lainnya */}
+          {[
+            { name: "Transparansi", path: "/transparansi-anggaran" },
+            { name: "Pengumuman", path: "/pengumuman" },
+            { name: "Bantuan", path: "/bantuan" }
+          ].map((item) => (
+            <button
+              key={item.name}
+              onClick={() => navigate(item.path)}
+              className="text-sm font-medium text-gray-300 hover:text-blue-900 transition-colors"
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="text-sm font-medium text-white bg-slate-800 px-5 py-2 hover:bg-blue-900 transition-colors"
+          >
+            Portal Warga
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// ==========================================
+// UTAMA: KOMPONEN LOGIN
+// ==========================================
 export default function Login() {
+  const navigate = useNavigate();
+  
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [focused, setFocused] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const [formData, setFormData] = useState({
-    nik: "",
-    nama_lengkap: "",
-    username: "", 
-    password: "",
-    no_hp: ""
-  });
+  const [nik, setNik] = useState("");
+  const [password, setPassword] = useState("");
+  const [namaLengkap, setNamaLengkap] = useState("");
+  const [noHp, setNoHp] = useState("");
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const next = { ...formData, [e.target.id]: e.target.value };
-    console.log("handleChange ->", e.target.id, e.target.value, next);
-    setFormData(next);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleMode = () => {
+    setIsRegister(!isRegister);
+    setNik("");
+    setPassword("");
+    setNamaLengkap("");
+    setNoHp("");
+    setShowPassword(false);
   };
 
-  const copy = isRegister
-    ? {
-        heroTitle: "Bergabung dengan Komunitas Digital.",
-        heroDesc: "Daftarkan diri Anda untuk akses layanan surat menyurat dan laporan warga secara instan.",
-        title: "Buat Akun",
-        subtitle: "Lengkapi data diri Anda di bawah ini.",
-        submitIdle: "Daftar Akun",
-        submitLoading: "Mendaftarkan...",
-        switchPrompt: "Sudah punya akun?",
-        switchAction: "Masuk Sekarang",
-      }
-    : {
-        heroTitle: "Portal Layanan Desa Terpadu.",
-        heroDesc: "Masuk untuk mengelola administrasi, pengumuman, dan laporan warga secara real-time.",
-        title: "Selamat Datang",
-        subtitle: "Silakan masuk dengan kredensial Anda.",
-        submitIdle: "Masuk ke Portal",
-        submitLoading: "Menyambungkan...",
-        switchPrompt: "Belum punya akun?",
-        switchAction: "Daftar Sekarang",
-      };
-
-  const handleAuth = async (e: SyntheticEvent<HTMLFormElement>) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
-      console.log("handleAuth start -> isRegister:", isRegister, "formData:", formData);
-
       if (isRegister) {
-        console.log("About to POST /register with:", {
-          nik: formData.nik,
-          nama_lengkap: formData.nama_lengkap,
-          username: formData.nik,
-          password: formData.password,
-          no_hp: formData.no_hp,
+        const response = await axios.post("http://localhost:5000/api/v1/auth/register", {
+          nama_lengkap: namaLengkap,
+          nik: nik,
+          username: nik,
+          no_hp: noHp,
+          password: password
         });
 
-        const res = await axios.post(`${API_URL}/register`, {
-          nik: formData.nik,
-          nama_lengkap: formData.nama_lengkap,
-          username: formData.nik,
-          password: formData.password,
-          no_hp: formData.no_hp,
-        });
-
-        console.log("Response Register:", res?.data);
-
-        if (res?.data?.success) {
-          setIsRegister(false);
-          alert("Pendaftaran berhasil! Silakan masuk.");
-        } else {
-          console.warn("Register returned success:false ->", res?.data);
-          alert(res?.data?.message || "Pendaftaran gagal, silakan periksa data Anda.");
+        if (response.data.success) {
+          alert("Akun warga berhasil didaftarkan! Silakan masuk untuk melengkapi berkas.");
+          toggleMode();
         }
       } else {
-        console.log("About to POST /login with:", { username: formData.nik, password: formData.password });
-
-        const res = await axios.post(`${API_URL}/login`, {
-          username: formData.nik,
-          password: formData.password,
+        const response = await axios.post("http://localhost:5000/api/v1/auth/login", {
+          username: nik,
+          password: password
         });
 
-        console.log("Response Login:", res?.data);
-
-        if (res?.data?.success) {
-          const { token, user } = res.data;
-
+        if (response.data.success) {
           localStorage.clear();
-          localStorage.setItem("token", token);
-          localStorage.setItem("role", user?.role || "");
+          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          localStorage.setItem("role", response.data.user.role || "");
 
-          alert(`Selamat Datang, ${user?.nama_lengkap || "User"}`);
+          alert("Login Berhasil!");
 
-          const userRole = (user?.role || "").toUpperCase().trim();
-          console.log("ROLE DARI DATABASE:", userRole);
-
-          if (userRole === "ADMIN") {
-            navigate("/admin/keuangan");
+          if (response.data.user.role === "ADMIN") {
+            navigate("/admin");
           } else {
             navigate("/dashboard-warga");
           }
-        } else {
-          console.warn("Login returned success:false ->", res?.data);
-          alert(res?.data?.message || "Kredensial tidak valid. Silakan coba lagi.");
         }
       }
     } catch (error: any) {
-      console.error("API Error Caught:", error);
-      console.error("error.response:", error?.response);
-      alert(error?.response?.data?.message || "Gagal menyambung ke server. Periksa koneksi backend.");
+      console.error("ERROR PADA MESIN AUTH SYSTEM FE:", error);
+      alert(error.response?.data?.message || "Gagal memproses permohonan, cek koneksi server Anda.");
     } finally {
       setIsLoading(false);
-      console.log("handleAuth finished, isLoading set to false");
     }
   };
 
-  const handleForgotPassword = () => {
-    alert("Fitur lupa sandi belum tersedia.");
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden font-sans antialiased">
+    <div style={{ minHeight: "100vh", background: "#080C14", fontFamily: "'DM Sans', 'Plus Jakarta Sans', system-ui, sans-serif", color: "#F8FAFC", overflow: "hidden", position: "relative" }}>
+      <Navbar />
       
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <motion.div
-          animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-100/40 blur-[120px]"
-        />
-        <motion.div
-          animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-100/40 blur-[120px]"
-        />
+      {/* Background Decor */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+        <div style={{ position: "absolute", top: "-20%", left: "55%", width: "700px", height: "700px", background: "radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%)", borderRadius: "50%" }} />
+        <div style={{ position: "absolute", bottom: "-10%", left: "-5%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", borderRadius: "50%" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: EASE_SPRING }}
-        className="relative w-full max-w-[1000px] grid grid-cols-1 lg:grid-cols-2 bg-white/40 backdrop-blur-2xl rounded-[2.5rem] border border-white ring-1 ring-slate-900/5 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] overflow-hidden"
-      >
+      {/* Main Content Layout */}
+      <main style={{ position: "relative", zIndex: 5, display: "grid", gridTemplateColumns: "1fr 480px", gap: 0, minHeight: "calc(100vh - 73px)", maxWidth: "1400px", margin: "0 auto", padding: "0 40px" }}>
         
-        <div className="relative hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full opacity-10">
-            <div className="absolute top-[-20%] right-[-20%] w-96 h-96 border-[40px] border-white rounded-full" />
-          </div>
+        {/* SISI KIRI: INFOGRAFIS */}
+        <motion.section variants={stagger} initial="hidden" animate="visible" style={{ display: "flex", flexDirection: "column", justifyContent: "center", paddingRight: "80px", paddingTop: "40px", paddingBottom: "40px" }}>
+          <motion.h1 variants={fadeUp} style={{ fontSize: "clamp(42px, 4.5vw, 64px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.08, margin: 0, marginBottom: "20px" }}>
+            Administrasi desa <br />
+            <span style={{ background: "linear-gradient(135deg, #60A5FA 0%, #818CF8 50%, #A78BFA 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              {isRegister ? "selangkah lebih dekat." : "kini digital."}
+            </span>
+          </motion.h1>
 
-          <motion.div custom={0} variants={FADE_UP} initial="hidden" animate="visible">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-all">
-                <ChevronLeft className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-sm font-bold text-white/80">Kembali ke Beranda</span>
-            </Link>
+          <motion.p variants={fadeUp} style={{ fontSize: "17px", color: "#64748B", lineHeight: 1.7, maxWidth: "480px", marginBottom: "80px", margin: 0 }}>
+            Satu portal untuk seluruh layanan administrasi — dari pengajuan surat hingga laporan kependudukan, semua tersedia secara real-time.
+          </motion.p>
+
+          {/* MEMANGGIL WIDGET STATISTIK SECARA INSTAN DI SINI */}
+          <motion.div variants={fadeUp}>
+            <StatsWidget />
           </motion.div>
 
-          <div className="relative z-10">
-            <motion.div custom={1} variants={FADE_UP} initial="hidden" animate="visible" className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center mb-8 shadow-2xl">
-              <Layers className="w-8 h-8 text-white" />
-            </motion.div>
-            <motion.h2 key={isRegister ? "reg-h2" : "log-h2"} initial={{opacity:0, x:-20}} animate={{opacity:1, x:0}} className="text-4xl font-extrabold text-white leading-tight mb-6">
-              {copy.heroTitle}
-            </motion.h2>
-            <motion.p key={isRegister ? "reg-p" : "log-p"} initial={{opacity:0}} animate={{opacity:1}} className="text-blue-100/70 text-lg font-medium leading-relaxed max-w-xs">
-              {copy.heroDesc}
-            </motion.p>
-          </div>
-
-          <motion.div custom={4} variants={FADE_UP} initial="hidden" animate="visible" className="flex items-center gap-4 py-4 px-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl w-fit">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            <span className="text-xs font-bold text-white/90 tracking-wide uppercase">Enkripsi Data Standar Nasional</span>
+          <motion.div variants={fadeUp} style={{ marginTop: "28px", display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#334155" }}>
+            <MapPin size={14} /> Melayani seluruh wilayah desa
           </motion.div>
-        </div>
+        </motion.section>
 
-        <div className="p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-white/60">
-          
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={isRegister ? "register" : "login"}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.4 }}
-            >
-              <div className="mb-10">
-                <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  {copy.title} <span className="text-blue-600">.</span>
-                </h3>
-                <p className="text-slate-500 font-medium mt-2">
-                  {copy.subtitle}
-                </p>
+        {/* SISI KANAN: FORM CARD */}
+        <section style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 0", borderLeft: "1px solid rgba(255,255,255,0.05)", paddingLeft: "60px" }}>
+          <motion.div initial={{ opacity: 0, x: 30, scale: 0.97 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ duration: 0.7, ease: EASE, delay: 0.2 }} style={{ width: "100%", maxWidth: "400px", background: "rgba(15,20,30,0.8)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "28px", padding: "36px", boxShadow: "0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "200px", height: "1px", background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.6), transparent)" }} />
+            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "120px", height: "60px", background: "radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%)" }} />
+
+            <div style={{ marginBottom: "28px", position: "relative" }}>
+              <div style={{ width: "48px", height: "48px", background: "linear-gradient(135deg, #2563EB, #4F46E5)", borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px", boxShadow: "0 8px 24px rgba(79,70,229,0.35)" }}>
+                {isRegister ? <UserPlus size={22} color="white" /> : <Fingerprint size={24} color="white" />}
+              </div>
+              <h2 style={{ fontSize: "26px", fontWeight: 700, letterSpacing: "-0.02em", margin: 0, marginBottom: "6px" }}>{isRegister ? "Buat Akun" : "Masuk Portal"}</h2>
+              <p style={{ fontSize: "13px", color: "#475569", lineHeight: 1.5, margin: 0 }}>{isRegister ? "Lengkapi nomor KTP dan WhatsApp aktif Anda." : "Gunakan NIK atau username untuk akses layanan DigiDesa."}</p>
+            </div>
+
+            <form onSubmit={handleAuthSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <AnimatePresence>
+                {isRegister && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
+                    <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", fontWeight: 600, color: "#94A3B8" }}>Nama Lengkap (Sesuai KTP)</label>
+                    <div style={{ position: "relative" }}>
+                      <UserPlus size={16} color={focused === "nama" ? "#818CF8" : "#334155"} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", transition: "color 0.2s" }} />
+                      <input type="text" value={namaLengkap} onChange={(e) => setNamaLengkap(e.target.value)} onFocus={() => setFocused("nama")} onBlur={() => setFocused(null)} required placeholder="Contoh: Uzumaki Bayu" style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px 12px 42px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", color: "#F1F5F9", fontSize: "14px", outline: "none", transition: "all 0.2s", fontFamily: "inherit" }} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", fontWeight: 600, color: "#94A3B8" }}>NIK KTP / Username</label>
+                <div style={{ position: "relative" }}>
+                  <User size={16} color={focused === "nik" ? "#818CF8" : "#334155"} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", transition: "color 0.2s" }} />
+                  <input type="text" value={nik} onChange={(e) => setNik(e.target.value)} onFocus={() => setFocused("nik")} onBlur={() => setFocused(null)} required placeholder="Masukkan NIK 16 digit..." style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px 12px 42px", background: focused === "nik" ? "rgba(99,102,241,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${focused === "nik" ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: "14px", color: "#F1F5F9", fontSize: "14px", outline: "none", transition: "all 0.2s", fontFamily: "inherit" }} />
+                </div>
               </div>
 
-              <form onSubmit={handleAuth} className="space-y-5">
+              <AnimatePresence>
                 {isRegister && (
-                  <div className="space-y-2">
-                    <label htmlFor="nama_lengkap" className="text-xs font-extrabold text-slate-500 uppercase tracking-widest ml-1">Nama Lengkap</label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <UserPlus className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
-                      </div>
-                      <input id="nama_lengkap" value={formData.nama_lengkap} onChange={handleChange} type="text" className="block w-full pl-11 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-sm" placeholder="Nama Sesuai KTP" required />
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
+                    <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", fontWeight: 600, color: "#94A3B8" }}>No WhatsApp Aktif</label>
+                    <div style={{ position: "relative" }}>
+                      <Phone size={16} color={focused === "hp" ? "#818CF8" : "#334155"} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", transition: "color 0.2s" }} />
+                      <input type="tel" value={noHp} onChange={(e) => setNoHp(e.target.value)} onFocus={() => setFocused("hp")} onBlur={() => setFocused(null)} required placeholder="Contoh: 08xxxxxxxxxx" style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px 12px 42px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", color: "#F1F5F9", fontSize: "14px", outline: "none", transition: "all 0.2s", fontFamily: "inherit" }} />
                     </div>
-                  </div>
+                  </motion.div>
                 )}
+              </AnimatePresence>
 
-                <div className="space-y-2">
-                  <label htmlFor="nik" className="text-xs font-extrabold text-slate-500 uppercase tracking-widest ml-1">NIK</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
-                    </div>
-                    <input id="nik" value={formData.nik} onChange={handleChange} type="text" className="block w-full pl-11 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-sm" placeholder="Masukkan NIK Anda" required />
-                  </div>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: 600, color: "#94A3B8" }}>Kata Sandi</label>
+                  {!isRegister && <button type="button" onClick={() => alert("Pemulihan akun silakan lapor RT setempat.")} style={{ fontSize: "12px", fontWeight: 600, color: "#6366F1", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>Lupa sandi?</button>}
                 </div>
-
-                {isRegister && (
-                  <div className="space-y-2">
-                    <label htmlFor="no_hp" className="text-xs font-extrabold text-slate-500 uppercase tracking-widest ml-1">Nomor WhatsApp</label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Phone className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
-                      </div>
-                      <input id="no_hp" value={formData.no_hp} onChange={handleChange} type="tel" className="block w-full pl-11 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-sm" placeholder="08xx xxxx xxxx" required />
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center px-1">
-                    <label htmlFor="password" className="text-xs font-extrabold text-slate-500 uppercase tracking-widest">Kata Sandi</label>
-                    {!isRegister && (
-                      <button type="button" onClick={handleForgotPassword} className="text-[11px] font-bold text-blue-600">
-                        Lupa sandi?
-                      </button>
-                    )}
-                  </div>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
-                    </div>
-                    <input 
-                      id="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      type={showPassword ? "text" : "password"} 
-                      className="block w-full pl-11 pr-12 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-sm"
-                      placeholder="••••••••"
-                      required
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
+                <div style={{ position: "relative" }}>
+                  <Lock size={16} color={focused === "password" ? "#818CF8" : "#334155"} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", transition: "color 0.2s" }} />
+                  <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} onFocus={() => setFocused("password")} onBlur={() => setFocused(null)} required placeholder={isRegister ? "Buat kata sandi aman..." : "Masukkan kata sandi..."} style={{ width: "100%", boxSizing: "border-box", padding: "12px 44px 12px 42px", background: focused === "password" ? "rgba(99,102,241,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${focused === "password" ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: "14px", color: "#F1F5F9", fontSize: "14px", outline: "none", transition: "all 0.2s", fontFamily: "inherit" }} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 0, display: "flex", transition: "color 0.2s" }}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                 </div>
+              </div>
 
-                <motion.button
-                  type="submit"
-                  disabled={isLoading}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-3 py-4 mt-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-900/20 hover:bg-slate-800 transition-all disabled:opacity-70"
-                >
+              {!isRegister && (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+                  <input type="checkbox" id="remember" style={{ width: "15px", height: "15px", accentColor: "#6366F1", cursor: "pointer" }} />
+                  <label htmlFor="remember" style={{ fontSize: "12px", color: "#475569", cursor: "pointer" }}>Ingat perangkat ini selama 30 hari</label>
+                </div>
+              )}
+
+              <motion.button type="submit" disabled={isLoading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} style={{ marginTop: "8px", width: "100%", padding: "14px", border: "none", borderRadius: "14px", color: "white", fontSize: "14px", fontWeight: 700, cursor: isLoading ? "not-allowed" : "pointer", background: isLoading ? "rgba(79,70,229,0.5)" : "linear-gradient(135deg, #3B82F6 0%, #4F46E5 50%, #7C3AED 100%)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", letterSpacing: "-0.01em", boxShadow: isLoading ? "none" : "0 8px 24px rgba(79,70,229,0.3)", transition: "all 0.3s", fontFamily: "inherit" }}>
+                <AnimatePresence mode="wait">
                   {isLoading ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> {copy.submitLoading}</>
+                    <motion.span key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <Loader2 size={16} className="animate-spin" style={{ animation: "spin 1s linear infinite" }} />
+                      {isRegister ? "Mendaftarkan..." : "Memverifikasi Kredensial..."}
+                    </motion.span>
                   ) : (
-                    <>{copy.submitIdle} <ArrowRight className="w-5 h-5" /></>
+                    <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      {isRegister ? "Daftar Akun Baru" : "Masuk ke Portal"} <ArrowRight size={16} />
+                    </motion.span>
                   )}
-                </motion.button>
-              </form>
+                </AnimatePresence>
+              </motion.button>
+            </form>
 
-              <div className="mt-8 text-center">
-                <p className="text-sm font-medium text-slate-500">
-                  {copy.switchPrompt}{" "}
-                  <button 
-                    onClick={() => setIsRegister(!isRegister)} 
-                    className="text-blue-600 font-bold hover:underline ml-1"
-                  >
-                    {copy.switchAction}
-                  </button>
-                </p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </motion.div>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "18px 0" }}>
+              <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
+              <span style={{ fontSize: "12px", color: "#334155" }}>atau</span>
+              <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
+            </div>
+
+            <motion.button type="button" onClick={toggleMode} whileHover={{ borderColor: "rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.06)" }} style={{ width: "100%", padding: "13px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", color: "#94A3B8", fontSize: "13px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", transition: "all 0.2s", fontFamily: "inherit" }}>
+              {isRegister ? "Sudah punya akun? Masuk sekarang" : "Belum punya akun? Daftar sekarang"} <ChevronRight size={14} />
+            </motion.button>
+
+            <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "#475569" }}><ShieldCheck size={12} color="#4F46E5" /> SSL 256-bit</div>
+              <div style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.05)" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "#475569" }}><Lock size={12} color="#4F46E5" /> Terenkripsi</div>
+              <div style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.05)" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "#475569" }}><CheckCircle2 size={12} color="#4F46E5" /> Secure BSrE</div>
+            </div>
+          </motion.div>
+        </section>
+      </main>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        input::placeholder { color: #475569 !important; font-weight: 500; }
+        input:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.25) !important; }
+        * { -webkit-font-smoothing: antialiased; }
+      `}</style>
     </div>
   );
 }

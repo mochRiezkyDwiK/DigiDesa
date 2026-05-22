@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom"; // 1. Import Navigate
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
@@ -22,7 +22,7 @@ import {
   Zap
 } from "lucide-react";
 import { EASE_SPRING } from "../../constants/animation";
-import { div } from "framer-motion/client";
+
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },

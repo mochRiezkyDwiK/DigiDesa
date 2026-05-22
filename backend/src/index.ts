@@ -4,7 +4,6 @@ import express from "express";
 import cors from "cors";
 import { AppDataSource } from "./lib/data-source";
 import authRoutes from "./routes/authRoutes";
-
 import adminRoutes from "./routes/adminRoutes";
 
 if (!process.env.DATABASE_URL) {
