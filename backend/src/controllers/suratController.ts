@@ -1,202 +1,142 @@
-import { Request, Response } from 'express';
-import pool from '../../database';
+import { Request, Response } from "express";
+import { AppDataSource } from "../lib/data-source";
+import { Surat, JenisSurat, StatusSurat } from "../models/Surat";
+import { User } from "../models/User";
+import * as crypto from "crypto";
 
-export const getJenisSurat = async (req: Request, res: Response) => {
-  try {
-    const query = 'SELECT * FROM jenis_surat WHERE is_active = true ORDER BY id';
-    const [result] = await pool.query(query);
+const suratRepository = AppDataSource.getRepository(Surat);
+const userRepository = AppDataSource.getRepository(User);
 
-    res.status(200).json({
-      success: true,
-      message: 'Daftar jenis surat berhasil dimuat',
-      data: result
-    });
-  } catch (error) {
-    console.error('Error getting letter types:' , error);
-    res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan pada server'
-    });
-  }
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── FUNGSI KHUSUS SIDE WARGA (CLIENT)
+// ─────────────────────────────────────────────────────────────────────────────
 
-export const getJenisSuratById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const query = 'SELECT * FROM jenis_surat WHERE id = ? AND is_active = true';
-    const [result] = await pool.query(query, [id]);
+// 1. Warga Membuat Pengajuan Surat Baru (POST)
+export const createSurat = async (req: Request, res: Response) => {
+    try {
+        const { jenis_surat, keperluan } = req.body;
+        const userId = (req as any).user.id; // Comot otomatis dari decrypt Token JWT
 
-    if (result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Jenis surat tidak ditemukan'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Detail jenis surat berhasil dimuat',
-      data: result[0]
-    });
-  } catch (error) {
-    console.error('Error getting letter type details:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan pada server'
-    });
-  }
-};
-
-export const ajukanSurat = async (req: Request, res: Response) => {
-  try {
-    const { jenis_surat, nama_lengkap, nik, tempat_lahir, tanggal_lahir, pekerjaan, alamat, keperluan } = req.body;
-    const applicationId = `SR${Date.now()}${Math.floor(Math.random() * 1000)}`;
-    const nomorAntrian = Math.floor(Math.random() * 1000);
-    const query = `
-      INSERT INTO surat_applications
-      (application_id, jenis_surat, nama_lengkap, nik, tempat_lahir, tanggal_lahir, pekerjaan, alamat, keperluan, status, tanggal_pengajuan, nomor_antrian)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-      applicationId,
-      Number(jenis_surat),
-      nama_lengkap,
-      nik,
-      tempat_lahir,
-      tanggal_lahir,
-      pekerjaan,
-      alamat,
-      keperluan,
-      'pending',
-      new Date(),
-      nomorAntrian
-    ];
-
-    await pool.query(query, values);
-
-    res.status(201).json({
-      success: true,
-      message: 'Pengajuan surat berhasil dikirim',
-      data: { application_id: applicationId, nomor_antrian: nomorAntrian, status: 'pending' }
-    });
-  } catch (error) {
-    console.error('Error submitting application:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan pada server'
-    });
-  }
-};
-
-export const getStatusPengajuan = async (req: Request, res: Response) => {
-  try {
-    const { applicationId } = req.params;
-    const query = 'SELECT * FROM surat_applications WHERE application_id = ?';
-    const [result] = await pool.query(query, [applicationId]);
-
-    if (result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pengajuan tidak ditemukan'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Status pengajuan berhasil dimuat',
-      data: result[0]
-    });
-  } catch (error) {
-    console.error('Error checking application status:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan pada server'
-    });
-  }
-};
-
-export const getAllPengajuan = async (req: Request, res: Response) => {
-  try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
-    const offset = (page - 1) * limit;
-
-    let query = 'SELECT * FROM surat_applications';
-    let countQuery = 'SELECT COUNT(*) as count FROM surat_applications';
-    const values: (string | number)[] = [];
-
-    if (status) {
-      query += ' WHERE status = ?';
-      countQuery += ' WHERE status = ?';
-      values.push(status);
-    }
-
-    query += ' ORDER BY tanggal_pengajuan DESC LIMIT ? OFFSET ?';
-    values.push(limit, offset);
-
-    const [applicationsResult] = await pool.query(query, values);
-    const [countResult] = await pool.query(countQuery, status ? [status] : []);
-
-    const total = Number(countResult[0].count);
-
-    res.status(200).json({
-      success: true,
-      message: 'Daftar pengajuan berhasil dimuat',
-      data: {
-        applications: applicationsResult,
-        pagination: {
-          current_page: page,
-          total_pages: Math.ceil(total / limit),
-          total_items: total,
-          items_per_page: limit
+        // Validasi apakah enum jenis surat sesuai
+        if (!Object.values(JenisSurat).includes(jenis_surat)) {
+            return res.status(400).json({ success: false, message: "Jenis surat tidak valid!" });
         }
-      }
-    });
-  } catch (error) {
-    console.error('Error getting applications:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan pada server'
-    });
-  }
+
+        const user = await userRepository.findOneBy({ id: userId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User warga tidak ditemukan!" });
+        }
+
+        // Cetak object surat baru
+        const baruSurat = new Surat();
+        baruSurat.user = user;
+        baruSurat.jenis_surat = jenis_surat;
+        baruSurat.keperluan = keperluan;
+        baruSurat.status = StatusSurat.PENDING; // Otomatis standby di-review RT
+
+        await suratRepository.save(baruSurat);
+
+        return res.status(201).json({
+            success: true,
+            message: "Permohonan pengajuan surat berhasil dikunci ke database!",
+            data: baruSurat
+        });
+    } catch (error: any) {
+        console.error("ERROR CREATE SURAT:", error);
+        return res.status(500).json({ success: false, message: error.message || "Gagal membuat pengajuan surat" });
+    }
 };
 
-export const updateStatusPengajuan = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { status, catatan } = req.body;
+// 2. Warga Mengambil Riwayat Surat Miliknya Sendiri (GET)
+export const getSuratByWarga = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user.id; // Ambil ID dari token login
 
-    const query = `
-      UPDATE surat_applications
-      SET status = ?, catatan = ?, updated_at = ?
-      WHERE application_id = ?
-    `;
+        const riwayatSurat = await suratRepository.find({
+            where: { user: { id: userId } },
+            order: { tgl_diajukan: "DESC" } // Surat terbaru muncul paling atas
+        });
 
-    const values = [status, catatan || '', new Date(), id];
-    await pool.query(query, values);
-
-    // Fetch the updated record
-    const selectQuery = 'SELECT * FROM surat_applications WHERE application_id = ?';
-    const [result] = await pool.query(selectQuery, [id]);
-
-    if (result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pengajuan tidak ditemukan'
-      });
+        return res.json({
+            success: true,
+            data: riwayatSurat
+        });
+    } catch (error: any) {
+        console.error("ERROR GET SURAT WARGA:", error);
+        return res.status(500).json({ success: false, message: "Gagal memuat riwayat surat" });
     }
+};
 
-    res.status(200).json({
-      success: true,
-      message: 'Status pengajuan berhasil diperbarui',
-      data: result[0]
-    });
-  } catch (error) {
-    console.error('Error updating application:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Terjadi kesalahan pada server'
-    });
-  }
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── FUNGSI KHUSUS SIDE ADMIN (MENARA KONTROL KELURAHAN)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 3. Admin Mengambil Semua Antrean Surat Masuk Desa (GET)
+export const getAllSuratAdmin = async (req: Request, res: Response) => {
+    try {
+        const semuaSurat = await suratRepository.find({
+            relations: ["user"], // Muat detail data warga pengaju (Nama, RT, RW)
+            order: { tgl_diajukan: "DESC" }
+        });
+
+        return res.json({
+            success: true,
+            data: semuaSurat
+        });
+    } catch (error: any) {
+        console.error("ERROR GET ALL SURAT ADMIN:", error);
+        return res.status(500).json({ success: false, message: "Gagal memuat antrean surat admin" });
+    }
+};
+
+// 4. Admin Mengeksekusi Otoritas Surat (ACC / REJECT)
+export const verifySuratAdmin = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { status, alasan_ditolak } = req.body; // status berupa: 'SELESAI' atau 'REJECTED'
+
+        const surat = await suratRepository.findOne({
+            where: { id: parseInt(id) },
+            relations: ["user"]
+        });
+
+        if (!surat) {
+            return res.status(404).json({ success: false, message: "Berkas pengajuan surat tidak ditemukan!" });
+        }
+
+        if (status === StatusSurat.SELESAI) {
+            // 🧠 ENGINE OTOMATISASI GENERATOR NOMOR SURAT RESMI DESA DIGITAL
+            const totalSelesai = await suratRepository.countBy({ status: StatusSurat.SELESAI });
+            const urutanNomor = String(totalSelesai + 1).padStart(3, "0");
+            const bulanRomawi = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][new Date().getMonth()];
+            const tahun = new Date().getFullYear();
+            
+            // Format Output: 001/SKD/RT01/RW10/V/2026
+            surat.no_surat = `${urutanNomor}/${surat.jenis_surat}/RT${surat.user.rt || "00"}/RW${surat.user.rw || "00"}/${bulanRomawi}/${tahun}`;
+            
+            // 🛡️ GENERATOR TOKEN QR CODE AMAN ANTI-PEMALSUAN DOKUMEN
+            surat.token_qr = crypto.randomBytes(16).toString("hex");
+            surat.tgl_disetujui = new Date();
+            surat.alasan_ditolak = ""; // Bersihkan kolom jika sebelumnya pernah direject
+        } else if (status === StatusSurat.REJECTED) {
+            if (!alasan_ditolak) {
+                return res.status(400).json({ success: false, message: "Alasan penolakan surat wajib diisi!" });
+            }
+            surat.alasan_ditolak = alasan_ditolak;
+            surat.no_surat = "";
+            surat.token_qr = "";
+        }
+
+        surat.status = status;
+        await suratRepository.save(surat);
+
+        return res.json({
+            success: true,
+            message: `Berkas permohonan surat berhasil diperbarui menjadi ${status}!`,
+            data: surat
+        });
+    } catch (error: any) {
+        console.error("ERROR VERIFY SURAT ADMIN:", error);
+        return res.status(500).json({ success: false, message: "Gagal memproses eksekusi berkas surat" });
+    }
 };

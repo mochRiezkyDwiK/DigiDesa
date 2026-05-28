@@ -41,6 +41,23 @@ export class User {
     @Column({ type: "varchar", length: 5, nullable: true })
     rw!: string;
 
+    // ── KOLOM BARU UNTUK SISTEM VERIFICATION GATE ──
+
+    @Column({ type: "varchar", length: 30, default: "INCOMPLETE" })
+    status_akun: "INCOMPLETE" | "PENDING" | "REJECTED" | "VERIFIED_TETAP" | "VERIFIED_PENDATANG" | "BANNED";
+
+    @Column({ type: "varchar", length: 30, nullable: true })
+    status_hubungan: string; // Contoh: Kepala Keluarga, Istri, Anak
+
+    @Column({ type: "varchar", length: 20, nullable: true })
+    status_tinggal: "TETAP" | "PENDATANG";
+
+    @Column({ type: "varchar", length: 255, nullable: true })
+    foto_ktp: string;
+
+    @Column({ type: "text", nullable: true })
+    alasan_ditolak: string;
+
     @Column({
         type: "enum",
         enum: ["WARGA", "ADMIN"],

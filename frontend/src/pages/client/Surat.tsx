@@ -1,480 +1,338 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { data, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion"; 
+import { useNavigate, useLocation } from "react-router-dom";
 import { EASE_SPRING } from "../../constants/animation";
-import {
-  FileText,
-  ArrowLeft,
-  Send,
-  CheckCircle2,
-  User,
-  MapPin,
-  Phone,
-  Calendar,
-  Building,
-  Info,
-  Download,
-  Loader,
+import axios from "axios"; 
+import { 
+  FileText, ArrowLeft, Send, CheckCircle2, User, 
+  MapPin, Fingerprint
 } from "lucide-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, delay: i * 0.1, ease: EASE_SPRING },
-  }),
+    opacity: 1, y: 0,
+    transition: { duration: 0.6, delay: i * 0.1, ease: EASE_SPRING }
+  })
 };
 
 export default function Surat() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false); 
+  const [pageLoading, setPageLoading] = useState(true); 
+
+  const token = localStorage.getItem("token");
+  
+  // ── BARU: State khusus untuk mencatat data asli bawaan dari database ──
+  const [dbUser, setDbUser] = useState<any>(null);
+
   const [formData, setFormData] = useState({
-    jenisSurat: "",
+    jenisSurat: location.state?.jenisSurat || "", 
     namaLengkap: "",
     nik: "",
     tempatLahir: "",
     tanggalLahir: "",
+    jenisKelamin: "",
+    agama: "",
     pekerjaan: "",
+    statusPerkawinan: "",
     alamat: "",
     rt: "",
     rw: "",
-    keperluan: "",
-    noHp: "",
+    keperluan: "", 
+    noHp: ""
   });
   const [apiResponse, setApiResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // ── SINKRONISASI ASLI DARI DATABASE MYSQL ──
+  useEffect(() => {
+    const fetchLiveProfile = async () => {
+      if (!token) {
+        alert("Sesi login tidak ditemukan. Silakan login kembali!");
+        navigate("/login");
+        return;
+      }
 
-    const alamatLengkap = `${formData.alamat}, RT ${formData.rt}/RW ${formData.rw}`;
-
-    const payload = {
-      jenis_surat: Number(formData.jenisSurat),
-      nama_lengkap: formData.namaLengkap,
-      nik: formData.nik,
-      tempat_lahir: formData.tempatLahir,
-      tanggal_lahir: formData.tanggalLahir,
-      pekerjaan: formData.pekerjaan || "Belum/Tidak Bekerja",
-      alamat: alamatLengkap,
-      keperluan: formData.keperluan,
-      no_hp: formData.noHp,
-    };
-
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/v1/surat/ajukan",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        },
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setApiResponse(result.data || result);
-        setStep(2);
-
-        setFormData({
-          jenisSurat: "",
-          namaLengkap: "",
-          nik: "",
-          tempatLahir: "",
-          tanggalLahir: "",
-          pekerjaan: "",
-          alamat: "",
-          rt: "",
-          rw: "",
-          keperluan: "",
-          noHp: "",
+      try {
+        const response = await axios.get("http://localhost:5000/api/v1/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-      } else {
-        alert(result.message || "Terjadi kesalahan saat mengirim surat.");
+        if (response.data.success) {
+          const user = response.data.data;
+          setDbUser(user); // Amankan data asli server ke state pembanding Ky
+          
+          setFormData(prev => ({
+            ...prev,
+            namaLengkap: user.nama_lengkap || "",
+            nik: user.nik || "",
+            tempatLahir: user.tempat_lahir || "",
+            tanggalLahir: user.tanggal_lahir ? user.tanggal_lahir.split("T")[0] : "",
+            jenisKelamin: user.jenis_kelamin || "Laki-laki",
+            agama: user.agama || "Islam",
+            pekerjaan: user.pekerjaan || "Swasta",
+            statusPerkawinan: user.status_perkawinan || "Belum Kawin",
+            alamat: user.alamat || "",
+            rt: user.rt || "",
+            rw: user.rw || "",
+            noHp: user.no_hp || ""
+          }));
+        }
+      } catch (error: any) {
+        console.error("GAGAL AMBIL PROFILE LIVE DARI DB:", error);
+        alert("Gagal sinkronisasi profil resmi warga.");
+      } finally {
+        setPageLoading(false);
       }
-    } catch (error) {
-      console.error("Error submitting surat:", error);
-      alert("Terjadi kesalahan saat mengirim surat. Silakan coba lagi.");
+    };
+
+    fetchLiveProfile();
+  }, [token, navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const detailKeperluan = `
+        [PROFIL PEMOHON]
+        Nama: ${formData.namaLengkap}
+        NIK: ${formData.nik}
+        Lahir: ${formData.tempatLahir}, ${formData.tanggalLahir}
+        Gender: ${formData.jenisKelamin} | Agama: ${formData.agama}
+        Pekerjaan: ${formData.pekerjaan} | Status: ${formData.statusPerkawinan}
+        Alamat: ${formData.alamat} (RT ${formData.rt} / RW ${formData.rw})
+        
+        [ALASAN PENGALIRAN SURAT]
+        ${formData.keperluan}
+      `;
+
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/surat/ajukan",
+        {
+          jenis_surat: formData.jenisSurat, 
+          keperluan: detailKeperluan
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.success) {
+        setStep(2);
+      }
+    } catch (error: any) {
+      console.error("ERROR SUBMIT SURAT FE:", error);
+      alert(error.response?.data?.message || "Gagal mengirim permohonan");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const jenisSuratOptions = [
-    {
-      value: "1",
-      label: "Surat Keterangan Tidak Mampu (SKTM)",
-      desc: "Untuk keperluan bantuan sosial",
-    },
-    {
-      value: "2",
-      label: "Surat Keterangan Domisili",
-      desc: "Bukti tempat tinggal",
-    },
-    {
-      value: "3",
-      label: "Surat Pengantar SKCK",
-      desc: "Untuk keperluan kepolisian",
-    },
-    {
-      value: "4",
-      label: "Surat Keterangan Usaha",
-      desc: "Bukti kepemilikan usaha",
-    },
-    {
-      value: "5",
-      label: "Surat Keterangan Penghasilan",
-      desc: "Bukti penghasilan",
-    },
-    {
-      value: "6",
-      label: "Surat Keterangan Kelahiran",
-      desc: "Bukti kelahiran",
-    },
-    {
-      value: "7",
-      label: "Surat Keterangan Wali",
-      desc: "Untuk keperluan wali hukum",
-    },
-    { value: "8", label: "Lainnya", desc: "Jenis surat lainnya" },
-  ];
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center font-sans font-bold text-slate-500 text-xs uppercase tracking-widest">
+        <span>Sinkronisasi Data Database Kelurahan...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans antialiased pb-20">
-      {/* ── HEADER ── */}
-      <header className="h-20 bg-white border-b border-gray-200 sticky top-0 z-50 px-6 flex items-center justify-between">
+      <header className="h-20 bg-white border-b border-gray-200 sticky top-0 z-50 px-6 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate("/layanan")}
-            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-50 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft size={20} strokeWidth={2} />
+          <button type="button" onClick={() => navigate('/layanan')} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-600 transition-all">
+            <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">
-              Pembuatan Surat
-            </h1>
-            <p className="text-sm text-gray-500">Pemerintah Desa</p>
+            <h1 className="text-lg font-bold text-gray-900">Formulir Layanan Desa</h1>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Digitalisasi Administrasi</p>
           </div>
-        </div>
-        <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
-          <Info size={16} className="text-blue-600" />
-          <p className="text-xs font-medium text-blue-800">
-            Proses 3-5 hari kerja
-          </p>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-8 pt-16">
+      <main className="max-w-5xl mx-auto px-6 pt-12">
         {step === 1 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-16">
-            {/* Kiri: Informasi Layanan */}
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={FADE_UP}
-              custom={0}
-              className="lg:col-span-2"
-            >
-              <div className="mb-6">
-                <span className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-md">
-                  Layanan Surat-Menyurat
-                </span>
-              </div>
-              <h2 className="text-3xl font-semibold text-gray-900 mb-4">
-                Ajukan Pembuatan Surat
-              </h2>
-              <p className="text-gray-600 text-base mb-8 leading-relaxed">
-                Permohonan surat keterangan dari pemerintah desa dapat diajukan
-                secara online. Proses verifikasi akan dilakukan maksimal 3-5
-                hari kerja.
-              </p>
-
-              <div className="space-y-4">
-                {[
-                  {
-                    t: "Pilih Jenis Surat",
-                    d: "Pilih jenis surat yang dibutuhkan",
-                    i: FileText,
-                    c: "blue",
-                  },
-                  {
-                    t: "Lengkapi Data",
-                    d: "Isi form dengan data yang valid",
-                    i: User,
-                    c: "green",
-                  },
-                  {
-                    t: "Tunggu Verifikasi",
-                    d: "Proses oleh admin desa",
-                    i: CheckCircle2,
-                    c: "blue",
-                  },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-lg bg-${item.c}-50 flex items-center justify-center shrink-0`}
-                    >
-                      <item.i
-                        className={`text-${item.c}-600`}
-                        size={18}
-                        strokeWidth={2}
-                      />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">
-                        {item.t}
-                      </h4>
-                      <p className="text-xs text-gray-500">{item.d}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Kanan: Form Permohonan */}
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={FADE_UP}
-              custom={1}
-              className="lg:col-span-3"
-            >
-              <form
-                onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm space-y-6"
-              >
-                {/* Jenis Surat */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Jenis Surat *
-                  </label>
-                  <select
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    value={formData.jenisSurat}
-                    onChange={(e) =>
-                      setFormData({ ...formData, jenisSurat: e.target.value })
-                    }
-                    required
-                  >
-                    <option value="">Pilih jenis surat</option>
-                    {jenisSuratOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            
+            {/* PANEL KIRI */}
+            <div className="lg:col-span-1 space-y-6">
+              <motion.div initial="hidden" animate="visible" variants={FADE_UP} custom={0} className="bg-slate-900 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-600 rounded-full blur-3xl opacity-30" />
+                <h2 className="text-2xl font-black mb-4 tracking-tight">Deteksi Data Pintar</h2>
+                <p className="text-slate-400 text-xs leading-relaxed mb-6">Sistem DigiDesa mendeteksi profil Anda. Kolom yang sudah terekam di database kelurahan akan otomatis terkunci demi integritas data, sedangkan kolom yang masih kosong terbuka untuk Anda lengkapi.</p>
+                <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-wider bg-white/5 p-3 rounded-xl border border-white/10 text-blue-400">
+                    <CheckCircle2 size={16} /> Gating Kondisional Aktif
                 </div>
+              </motion.div>
+            </div>
 
-                {/* Data Pemohon */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
-                    Data Pemohon
+            {/* PANEL KANAN */}
+            <motion.div initial="hidden" animate="visible" variants={FADE_UP} custom={1} className="lg:col-span-2 space-y-6">
+              <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
+                
+                {/* IDENTITAS DASAR */}
+                <section className="space-y-5">
+                  <h3 className="text-sm font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <Fingerprint size={16} /> Identitas Dasar Warga
                   </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        Nama Lengkap *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        value={formData.namaLengkap}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            namaLengkap: e.target.value,
-                          })
-                        }
-                        required
-                      />
+                      <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Jenis Surat *</label>
+                      <select name="jenisSurat" value={formData.jenisSurat} onChange={handleChange} required className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold outline-none text-slate-800">
+                        <option value="">Pilih Jenis Surat</option>
+                        <option value="SKD">Surat Keterangan Domisili (SKD)</option>
+                        <option value="SKU">Surat Keterangan Usaha (SKU)</option>
+                        <option value="SKTM">Surat Keterangan Tidak Mampu (SKTM)</option>
+                        <option value="SKP">Surat Pengantar SKCK</option>
+                      </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        NIK *
-                      </label>
-                      <input
-                        type="text"
-                        maxLength={16}
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        value={formData.nik}
-                        onChange={(e) =>
-                          setFormData({ ...formData, nik: e.target.value })
-                        }
-                        onKeyPress={(e) =>
-                          !/[0-9]/.test(e.key) && e.preventDefault()
-                        }
+                      <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">NIK KTP Warga</label>
+                      {/* ── BARU: Hanya lock jika NIK beneran ada isinya di DB MySQL ── */}
+                      <input 
+                        type="text" 
+                        name="nik" 
+                        value={formData.nik} 
+                        onChange={handleChange} 
+                        disabled={!!dbUser?.nik} 
                         required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        Tempat Lahir *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        value={formData.tempatLahir}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            tempatLahir: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        Tanggal Lahir *
-                      </label>
-                      <input
-                        type="date"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        value={formData.tanggalLahir}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            tanggalLahir: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        No. HP *
-                      </label>
-                      <input
-                        type="tel"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        value={formData.noHp}
-                        onChange={(e) =>
-                          setFormData({ ...formData, noHp: e.target.value })
-                        }
-                        required
+                        placeholder="Ketik 16 digit NIK Anda..."
+                        className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all ${
+                          dbUser?.nik ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
+                        }`} 
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Alamat Lengkap *
-                    </label>
-                    <textarea
-                      rows={3}
-                      className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                      value={formData.alamat}
-                      onChange={(e) =>
-                        setFormData({ ...formData, alamat: e.target.value })
-                      }
+                    <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Nama Lengkap Sesuai Akun</label>
+                    <input 
+                      type="text" 
+                      name="namaLengkap" 
+                      value={formData.namaLengkap} 
+                      onChange={handleChange} 
+                      disabled={!!dbUser?.nama_lengkap} 
                       required
+                      placeholder="Ketik Nama Lengkap Anda..."
+                      className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all ${
+                        dbUser?.nama_lengkap ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
+                      }`} 
                     />
                   </div>
+                </section>
 
-                  <div className="grid grid-cols-2 gap-4">
+                {/* BIODATA TAMBAHAN */}
+                <section className="space-y-5 pt-4 border-t border-gray-50">
+                  <h3 className="text-sm font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <User size={16} /> Biodata Tambahan
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        RT *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        value={formData.rt}
-                        onChange={(e) =>
-                          setFormData({ ...formData, rt: e.target.value })
-                        }
-                        required
+                      <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Jenis Kelamin</label>
+                      <select name="jenisKelamin" value={formData.jenisKelamin} onChange={handleChange} disabled={!!dbUser?.jenis_kelamin} className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold outline-none text-slate-800 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Agama</label>
+                      <select name="agama" value={formData.agama} onChange={handleChange} disabled={!!dbUser?.agama} className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 text-sm font-bold outline-none text-slate-800 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
+                        <option value="Islam">Islam</option>
+                        <option value="Kristen">Kristen</option>
+                        <option value="Katolik">Katolik</option>
+                        <option value="Hindu">Hindu</option>
+                        <option value="Budha">Budha</option>
+                        <option value="Konghucu">Konghucu</option>
+                      </select>
+                    </div>
+                  </div>
+                </section>
+
+                {/* DOMISILI LINGKUNGAN */}
+                <section className="space-y-5 pt-4 border-t border-gray-50">
+                  <h3 className="text-sm font-black text-blue-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <MapPin size={16} /> Domisili Lingkungan
+                  </h3>
+
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Alamat Rumah Lengkap</label>
+                    <textarea 
+                      name="alamat" 
+                      rows={2} 
+                      value={formData.alamat} 
+                      onChange={handleChange} 
+                      disabled={!!dbUser?.alamat} 
+                      placeholder="Ketik Alamat Rumah Sekarang..."
+                      className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all resize-none ${
+                        dbUser?.alamat ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
+                      }`} 
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">RT</label>
+                      <input 
+                        type="text" 
+                        name="rt" 
+                        value={formData.rt} 
+                        onChange={handleChange} 
+                        disabled={!!dbUser?.rt} 
+                        placeholder="00"
+                        className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all ${
+                          dbUser?.rt ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
+                        }`} 
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        RW *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        value={formData.rw}
-                        onChange={(e) =>
-                          setFormData({ ...formData, rw: e.target.value })
-                        }
-                        required
+                      <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">RW</label>
+                      <input 
+                        type="text" 
+                        name="rw" 
+                        value={formData.rw} 
+                        onChange={handleChange} 
+                        disabled={!!dbUser?.rw} 
+                        placeholder="00"
+                        className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all ${
+                          dbUser?.rw ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
+                        }`} 
                       />
                     </div>
                   </div>
-                </div>
 
-                {/* Keperluan */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Keperluan *
-                  </label>
-                  <textarea
-                    rows={4}
-                    placeholder="Jelaskan keperluan pembuatan surat..."
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                    value={formData.keperluan}
-                    onChange={(e) =>
-                      setFormData({ ...formData, keperluan: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+                  {/* FORM INPUT MANUAL UTAMA */}
+                  <div className="space-y-2 pt-2">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-blue-600 ml-1">Alasan Pengajuan Surat (Wajib Diisi) *</label>
+                    <textarea name="keperluan" rows={4} value={formData.keperluan} onChange={handleChange} required placeholder="Contoh: Syarat kelengkapan berkas administrasi pembukaan rekening Bank Mandiri..." className="w-full bg-blue-50/20 border border-blue-100 rounded-2xl py-4 px-5 text-sm font-bold focus:ring-4 focus:ring-blue-500/5 focus:bg-white outline-none transition-all resize-none text-slate-900" />
+                  </div>
+                </section>
 
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full py-3 bg-blue-600 text-white font-medium rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 ${isLoading ? "cursor-not-allowed opacity-70" : ""}`}
-                >
-                  {isLoading && <Loader size={16} />}
-                  <Send size={16} />
-                  Ajukan Permohonan
+                <button type="submit" disabled={loading} className="w-full py-5 bg-blue-600 text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all flex items-center justify-center gap-3 disabled:bg-blue-400">
+                  {loading ? "Memproses Data..." : <><Send size={18} /> Kirim Permohonan Resmi</>}
                 </button>
-              </form>
+              </div>
             </motion.div>
-          </div>
+          </form>
         ) : (
-          /* SUCCESS SCREEN */
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="max-w-md mx-auto text-center"
-          >
-            <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 size={40} strokeWidth={2} />
+          /* SCREEN SUKSES */
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-md mx-auto text-center py-20">
+            <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+              <CheckCircle2 size={48} strokeWidth={2.5} />
             </div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Permohonan Terkirim
-            </h2>
-            <p className="text-gray-600 text-base mb-8 leading-relaxed">
-              Permohonan pembuatan surat telah diterima. Proses verifikasi akan
-              dilakukan dalam 3-5 hari kerja. Anda akan menerima notifikasi
-              setelah surat selesai.
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => navigate("/layanan")}
-                className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg text-sm hover:bg-blue-700 transition-colors"
-              >
-                Kembali ke Layanan
-              </button>
-              <button
-                onClick={() => setStep(1)}
-                className="w-full py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg text-sm hover:bg-gray-50 transition-colors"
-              >
-                Buat Permohonan Baru
-              </button>
+            <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">Berhasil Terkirim!</h2>
+            <p className="text-gray-500 font-medium mb-10 leading-relaxed">Permohonan Anda sudah berhasil tersimpan di sistem desa.</p>
+            <div className="space-y-4">
+              <button type="button" onClick={() => navigate('/dashboard-warga')} className="w-full py-4 bg-gray-900 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-black transition-all">Lihat Status Surat</button>
             </div>
           </motion.div>
         )}

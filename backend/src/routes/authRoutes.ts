@@ -1,16 +1,29 @@
 import { Router } from "express";
-import { registerWarga, login, getProfile } from "../controllers/authController";
+import multer from "multer";
+import path from "path";
+import { register, login, getProfile, submitOnboarding } from "../controllers/authController";
 import { authenticateToken } from "../middleware/authMiddleware";
 
 const router = Router();
 
-// Endpoint: POST http://localhost:5000/api/v1/auth/register
-router.post("/register", registerWarga);
+// Konfigurasi Penyimpanan Foto KTP Warga
+const storageKtp = multer.diskStorage({
+  destination: "uploads/ktp/",
+  filename: (req, file, cb) => {
+    cb(null, `KTP-${Date.now()}${path.extname(file.originalname)}`);
+  },
+});
+const uploadKtp = multer({ storage: storageKtp });
 
-// Endpoint: POST http://localhost:5000/api/v1/auth/login
+// Jalur Auth Umum
+router.post("/register", register);
 router.post("/login", login);
 
-// Endpoint: GET http://localhost:5000/api/v1/auth/me
+// Jalur Profile Warga
+router.get("/profile", authenticateToken, getProfile);
 router.get("/me", authenticateToken, getProfile);
+
+// BARU: Jalur Kirim Formulir Onboarding (Proteksi Token + Upload Single File KTP)
+router.post("/onboarding", authenticateToken, uploadKtp.single("foto_ktp"), submitOnboarding);
 
 export default router;
