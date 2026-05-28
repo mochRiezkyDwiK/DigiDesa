@@ -5,7 +5,7 @@ import { EASE_SPRING } from "../../constants/animation";
 import { 
   FileText, 
   Search, 
-  ArrowRight,
+  ArrowRight, 
   Zap,
   Info,
   Clock,

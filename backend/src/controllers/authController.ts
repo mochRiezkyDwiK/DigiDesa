@@ -32,7 +32,6 @@ export const registerWarga = async (req: Request, res: Response) => {
 
         const userRepository = getUserRepository();
 
-        // Validasi keberadaan user
         const existingUser = await userRepository.findOne({
             where: [{ nik }, { username }]
         });
@@ -83,13 +82,12 @@ export const login = async (req: Request, res: Response) => {
         if (!jwtSecret) {
             return res.status(500).json({
                 success: false,
-                message: "Konfigurasi server belum lengkap (JWT_SECRET belum di-set)",
+                message: "Konfigurasi server belum lengkap",
             });
         }
 
         const userRepository = getUserRepository();
 
-        // 1. Cari user berdasarkan username (Bisa NIK atau Username)
         const user = await userRepository.findOne({ 
             where: [{ nik: username }, { username: username }] 
         });
@@ -98,20 +96,17 @@ export const login = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: "User tidak ditemukan!" });
         }
 
-        // 2. Cek password (bandingkan dengan hash di DB)
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ success: false, message: "Password salah!" });
         }
 
-        // 3. Buat JWT Token
         const token = jwt.sign(
             { id: user.id, role: user.role },
             jwtSecret,
-            { expiresIn: "1d" } // Token berlaku 1 hari
+            { expiresIn: "1d" }
         );
 
-        // 4. Kirim Response ke Frontend (Kirim nama_lengkap agar sinkron)
         res.json({
             success: true,
             message: "Login Berhasil!",
@@ -127,25 +122,18 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
-// --- FUNGSI GET PROFILE (protected) ---
-// --- FUNGSI GET PROFILE (protected) ---
+// --- FUNGSI GET PROFILE ---
 export const getProfile = async (req: Request, res: Response) => {
     try {
         const payload = (req as any).user as JwtUserPayload | undefined;
         if (!payload?.id) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized",
-            });
+            return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
         const userRepository = getUserRepository();
         const user = await userRepository.findOne({ where: { id: payload.id } });
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User tidak ditemukan",
-            });
+            return res.status(404).json({ success: false, message: "User tidak ditemukan" });
         }
 
         return res.json({
@@ -153,13 +141,10 @@ export const getProfile = async (req: Request, res: Response) => {
             data: {
                 id: user.id,
                 nik: user.nik,
-                // 🔴 DISESUAIKAN: Petakan nama_lengkap dari DB ke key 'nama' agar dibaca oleh React
                 nama: user.nama_lengkap, 
                 username: user.username,
                 no_hp: user.no_hp,
                 role: user.role,
-                // 🔴 TAMBAHAN: Pastikan kolom is_verified dikirim ke frontend
-                // Jika di model TypeORM belum ada, pastikan Anda menambahkannya di entitas User.ts
                 is_verified: (user as any).is_verified !== undefined ? Boolean((user as any).is_verified) : false,
                 created_at: user.created_at,
             }
@@ -167,5 +152,41 @@ export const getProfile = async (req: Request, res: Response) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Gagal mengambil profile" });
+    }
+};
+
+// --- FUNGSI SUBMIT ONBOARDING ---
+export const submitOnboarding = async (req: Request, res: Response) => {
+    try {
+        const payload = (req as any).user as JwtUserPayload | undefined;
+        if (!payload?.id) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const { alamat, rt, rw } = req.body;
+        const fotoKtp = req.file ? req.file.path : null;
+
+        if (!alamat || !rt || !rw || !fotoKtp) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Data onboarding tidak lengkap (Alamat, RT, RW, dan Foto KTP wajib diisi)" 
+            });
+        }
+
+        const userRepository = getUserRepository();
+        
+        // Update data user
+        await userRepository.update(payload.id, {
+            alamat,
+            rt,
+            rw,
+            foto_ktp: fotoKtp,
+            is_onboarded: true 
+        } as any); // 'as any' digunakan jika field belum terdefinisi di class entity User
+
+        res.json({ success: true, message: "Onboarding berhasil disimpan!" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Gagal menyimpan onboarding" });
     }
 };
