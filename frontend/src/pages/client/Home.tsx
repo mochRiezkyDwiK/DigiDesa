@@ -18,7 +18,7 @@ export default function Home() {
       <main>
         <HeroSection />
         <QuickAccessGrid />
-        <BudgetTransparency />
+        {/* <BudgetTransparency /> */}
         <NewsAnnouncements />
         <HowItWorks />
         {/* <FeaturesSection /> */}

@@ -9,6 +9,7 @@ import adminRoutes from "./src/routes/adminRoutes";
 import statsRoutes from "./src/routes/stats";
 import userRoutes from "./src/routes/userRoutes";
 import PengumumanRoutes from "./src/routes/PengumumanRoutes";
+import TransparansiRoutes from "./src/routes/TransparansiRoutes";
 
 if (!process.env.DATABASE_URL) {
     console.error("❌ DATABASE_URL tidak ditemukan di .env");
@@ -35,6 +36,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/v1", statsRoutes); 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1",PengumumanRoutes);
+app.use("/api/v1", TransparansiRoutes);
 
 app.get("/", (_req, res) => {
     res.send("API DigiDesa Running...");

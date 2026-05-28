@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // 1. Tambahkan useEffect
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -33,7 +33,7 @@ const FADE_UP = {
   })
 };
 
-// ─── DUMMY DATA ───────────────────────────────────────────────────────────────
+// ─── DATA STATIS ───────────────────────────────────────────────────────────────
 
 const QUICK_STATS = [
   { label: "Surat Aktif", value: "2", icon: FileText, trend: "+1 Baru", color: "blue", path: "/layanan" },
@@ -46,18 +46,85 @@ const SURAT_LIST = [
   { id: "SKU-042", tipe: "Keterangan Usaha", status: "Selesai", tgl: "20 Apr 2026", progress: 100 },
 ];
 
-// ─── COMPONENTS ───────────────────────────────────────────────────────────────
+// 2. Buat Interface untuk Struktur Data Warga dari TypeORM
+interface UserProfile {
+  nama: string;
+  nik: string;
+  rt: string | null;
+  rw: string | null;
+  is_verified: boolean;
+}
 
 export default function DashboardWarga() {
   const [activeTab, setActiveTab] = useState("Ringkasan");
-  const navigate = useNavigate(); // 2. Inisialisasi navigate
+  const navigate = useNavigate();
+
+  // 3. Tambahkan State untuk User dan Status Loading
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // 4. Hook Fetching Data dari Endpoint /me Backend
+  useEffect(() => {
+    const fetchDashboardProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          // Jika token tidak ada, tendang kembali ke halaman login
+          navigate("/login");
+          return;
+        }
+
+        const response = await fetch("http://localhost:5000/api/v1/auth/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const resData = await response.json();
+        if (resData.success) {
+          setUser(resData.data);
+        } else {
+          // Jika token expired atau invalid, bersihkan token dan redirect
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Gagal memuat profil dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardProfile();
+  }, [navigate]);
+
+  // Handler fungsi Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  // State loading skeleton sederhana sebelum data termuat
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FDFEFF] flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Sinkronisasi Data Desa...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased">
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 overflow-y-auto relative h-screen">
         <header className="h-24 bg-white/40 backdrop-blur-xl border-b border-slate-100/50 sticky top-0 z-40 px-8 sm:px-12 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full justify-between sm:justify-start">
             <div className="hidden sm:block relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
               <input
@@ -66,16 +133,30 @@ export default function DashboardWarga() {
                 className="bg-slate-100/50 border-none rounded-2xl py-2.5 pl-11 pr-4 text-xs font-medium focus:ring-2 focus:ring-blue-500/10 w-64 transition-all"
               />
             </div>
-            <button className="relative w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all">
-              <Bell size={20} strokeWidth={2} />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white" />
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
-              <div className="text-right hidden sm:block">
-                <p className="text-[13px] font-black text-slate-900 leading-none">Budi Santoso</p>
-                <p className="text-[10px] font-bold text-slate-400 mt-1">RT 01 / RW 10</p>
+            
+            <div className="flex items-center gap-4 ml-auto">
+              <button className="relative w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all">
+                <Bell size={20} strokeWidth={2} />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-600 rounded-full border-2 border-white" />
+              </button>
+              
+              {/* 5. GANTI DATA PROFILE HEADER */}
+              <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
+                <div className="text-right hidden sm:block">
+                  <p className="text-[13px] font-black text-slate-900 leading-none">{user?.nama}</p>
+                  <p className="text-[10px] font-bold text-slate-400 mt-1">
+                    RT {user?.rt || "-"} / RW {user?.rw || "-"}
+                  </p>
+                </div>
+                {/* Avatar berganti seed otomatis berdasarkan nama user unik */}
+                <img 
+                  className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-4 ring-slate-50 cursor-pointer" 
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.nama}`} 
+                  alt="Avatar" 
+                  onClick={handleLogout}
+                  title="Klik untuk Logout"
+                />
               </div>
-              <img className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-4 ring-slate-50" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" alt="Avatar" />
             </div>
           </div>
         </header>
@@ -93,17 +174,22 @@ export default function DashboardWarga() {
 
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div>
-                <span className="px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">Automasi Desa Digital</span>
+                <span className="px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
+                  {user?.is_verified ? "Akun Terverifikasi Sistem ✓" : "Menunggu Verifikasi Wilayah ⚠"}
+                </span>
+                {/* 6. GANTI DATA NAMA WELCOME */}
                 <h2 className="text-4xl font-black text-slate-900 mt-6 tracking-tighter leading-none">
-                  Layanan Publik <br /> <span className="text-blue-600">Serba Instan.</span>
+                  Halo, {user?.nama.split(' ')[0]}! <br /> Layanan Publik <span className="text-blue-600">Serba Instan.</span>
                 </h2>
                 <p className="text-slate-500 text-sm max-w-sm mt-4 leading-relaxed font-medium">
-                  RT dan RW kini otomatis mendapatkan laporan tembusan. Anda tidak perlu lagi meminta validasi fisik secara manual.
+                  {user?.is_verified 
+                    ? "Sistem Anda aktif. RT dan RW mendapatkan laporan tembusan otomatis tanpa perlu validasi fisik manual."
+                    : "Lengkapi data wilayah atau hubungi RT jika status profil belum terverifikasi untuk menggunakan layanan instan."}
                 </p>
               </div>
               <div className="flex gap-4">
                 <motion.button
-                  onClick={() => navigate('/layanan')} // Pasang tombol Hero
+                  onClick={() => navigate('/layanan')}
                   whileHover={{ y: -5 }}
                   className="px-8 py-4 bg-blue-600 text-white font-black rounded-2xl text-sm shadow-xl shadow-blue-500/25 hover:bg-blue-500 transition-all flex items-center gap-3"
                 >
@@ -119,7 +205,7 @@ export default function DashboardWarga() {
               <motion.div
                 key={s.label} initial="hidden" animate="visible" variants={FADE_UP} custom={i + 1}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                onClick={() => { if (s.path !== "#") navigate(s.path) }} // Pasang tombol Stats
+                onClick={() => { if (s.path !== "#") navigate(s.path) }}
                 className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.03)] flex items-center gap-6 group cursor-pointer"
               >
                 <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 transition-colors">
@@ -184,7 +270,7 @@ export default function DashboardWarga() {
                 ))}
               </div>
 
-              {/* SIMPLIFIED SERVICE TIMELINE */}
+              {/* TIMELINE PELAYANAN */}
               <div className="p-10 bg-white rounded-[3rem] border border-slate-100 relative overflow-hidden shadow-sm">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50" />
                 <div className="flex items-center gap-3 mb-8">
@@ -274,5 +360,5 @@ export default function DashboardWarga() {
         </div>
       </main>
     </div>
-    );
+  );
 }

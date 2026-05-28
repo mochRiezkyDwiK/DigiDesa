@@ -2,13 +2,11 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../lib/data-source";
 import { Report } from "../models/Report";
 
-const reportRepository = AppDataSource.getRepository(Report);
-
-// Ambil semua laporan untuk dashboard admin
+const reportRepository = AppDataSource.getRepository(Report);   
 export const getAllReports = async (req: Request, res: Response) => {
     try {
         const reports = await reportRepository.find({
-            relations: ["user"], // Pastikan di model Report.ts relasi ini namanya "user"
+            relations: ["user"],
             order: { created_at: "DESC" }
         });
         res.json({ success: true, data: reports });

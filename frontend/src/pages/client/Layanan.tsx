@@ -1,23 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // 1. Tambahkan useEffect
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 import { EASE_SPRING } from "../../constants/animation";
 import { 
   FileText, 
   Search, 
-  ChevronRight, 
   ArrowRight,
-  ShieldCheck, 
   Zap,
   Info,
   Clock,
-  UserCheck,
   CreditCard,
-  Flag,
   Users,
   MapPin,
-  ArrowLeft // 2. Import ikon ArrowLeft
+  ArrowLeft 
 } from "lucide-react";
+
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
@@ -27,9 +24,9 @@ const FADE_UP = {
   })
 };
 
-// ─── DUMMY DATA LAYANAN ───────────────────────────────────────────────────────
+// ─── DATA LAYANAN ──────────────────────────────────────────────────────────
 
-const KATEGORI = ["Semua", "Surat Keterangan", "Kependudukan", "Laporan & Aspirasi"];
+const KATEGORI = ["Semua", "Surat Keterangan", "Kependudukan"];
 
 const DAFTAR_LAYANAN = [
   { 
@@ -38,7 +35,8 @@ const DAFTAR_LAYANAN = [
     category: "Surat Keterangan",
     time: "Instan",
     icon: MapPin,
-    color: "blue"
+    color: "blue",
+    link: '/create-surat?type=domisili'
   },
   { 
     title: "Surat Keterangan Usaha (SKU)", 
@@ -46,7 +44,8 @@ const DAFTAR_LAYANAN = [
     category: "Surat Keterangan",
     time: "1 Hari Kerja",
     icon: CreditCard,
-    color: "indigo"
+    color: "indigo",
+    link: '/create-surat?type=sku'
   },
   { 
     title: "Update Data Kartu Keluarga", 
@@ -54,38 +53,57 @@ const DAFTAR_LAYANAN = [
     category: "Kependudukan",
     time: "Sistem Terpusat",
     icon: Users,
-    color: "violet"
-  },
-  { 
-    title: "Lapor Infrastruktur Rusak", 
-    desc: "Adukan kerusakan jalan, lampu penerangan, atau selokan untuk segera diperbaiki.",
-    category: "Laporan & Aspirasi",
-    time: "24/7",
-    icon: Flag,
-    color: "red"
-  },
-  { 
-    title: "Surat Pengantar Nikah", 
-    desc: "Dokumen awal sebagai syarat administrasi di tingkat KUA atau pencatatan sipil.",
-    category: "Surat Keterangan",
-    time: "2 Hari Kerja",
-    icon: FileText,
-    color: "blue"
-  },
-  { 
-    title: "Pendaftaran Warga Baru", 
-    desc: "Prosedur pelaporan diri bagi warga yang baru pindah ke lingkungan RW setempat.",
-    category: "Kependudukan",
-    time: "Validasi Digital",
-    icon: UserCheck,
-    color: "violet"
+    color: "violet",
+    link: '/create-surat?type=update-kk'
   }
 ];
+
+// 2. Definisi Struktur Data User dari Database
+interface UserProfile {
+  nama: string;
+  nik: string;
+  is_verified: boolean; // Menentukan apakah user sudah terverifikasi atau belum
+}
 
 export default function Layanan() {
   const [filter, setFilter] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate(); // 3. Inisialisasi navigate
+  const navigate = useNavigate(); 
+
+  // 3. State untuk menyimpan data user dari Database
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loadingUser, setLoadingUser] = useState<boolean>(true);
+
+  // 4. Hook useEffect untuk Fetch Data Profil User saat komponen dimuat
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setLoadingUser(true);
+        
+        // Ambil token JWT yang tersimpan di localStorage saat login
+        const token = localStorage.getItem("token"); 
+
+        const response = await fetch("http://localhost:5000/api/v1/auth/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` // Kirim token untuk mengidentifikasi user
+          }
+        });
+
+        const resData = await response.json();
+        if (resData.success) {
+          setUser(resData.data); // Simpan data profil ke dalam state
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data user kependudukan:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const filteredServices = DAFTAR_LAYANAN.filter(s => 
     (filter === "Semua" || s.category === filter) &&
@@ -97,17 +115,23 @@ export default function Layanan() {
       
       {/* ── HEADER LAYANAN ── */}
       <section className="bg-white pt-16 pb-20 px-8 relative overflow-hidden border-b border-slate-100">
-        {/* Tombol Kembali (Navigasi Utama) */}
-        <div className="max-w-6xl mx-auto mb-12 relative z-20">
+        <div className="max-w-6xl mx-auto mb-12 relative z-20 flex justify-between items-center">
             <motion.button 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={() => navigate('/dashboard-warga')}
               className="flex items-center gap-3 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl transition-all"
             >
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" strokeWidth={3} />
+              <ArrowLeft size={18} strokeWidth={3} />
               <span className="text-xs font-black uppercase tracking-widest">Kembali ke Dashboard</span>
             </motion.button>
+
+            {/* 5. Tampilkan nama user kecil di pojok kanan atas jika berhasil di-load */}
+            {user && (
+              <div className="text-right text-xs font-bold text-slate-500">
+                Warga: <span className="text-slate-900">{user.nama}</span>
+              </div>
+            )}
         </div>
 
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full blur-[100px] opacity-40 -mr-20 -mt-20" />
@@ -165,6 +189,7 @@ export default function Layanan() {
               variants={FADE_UP}
               custom={i}
               whileHover={{ y: -10 }}
+              onClick={() => navigate(service.link)}
               className="group bg-white p-8 rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.04)] hover:border-blue-200 transition-all cursor-pointer flex flex-col justify-between"
             >
               <div>
@@ -205,20 +230,33 @@ export default function Layanan() {
         )}
       </section>
 
-      {/* ── FOOTER INFO ── */}
+      {/* ── FOOTER INFO (TERINTEGRASI DATA USER ASLI) ── */}
       <section className="max-w-4xl mx-auto px-8 mt-24">
         <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 p-10 rounded-[3rem] border border-blue-100/50 flex flex-col md:flex-row items-center gap-8 shadow-sm">
           <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30 shrink-0">
             <Zap className="text-white" size={28} strokeWidth={2.5} />
           </div>
-          <div>
-            <h4 className="text-lg font-black text-slate-900 tracking-tight">Verifikasi Otomatis</h4>
+          <div className="grow">
+            <h4 className="text-lg font-black text-slate-900 tracking-tight">
+              {loadingUser ? "Memeriksa Status Akun..." : user?.is_verified ? "Profil Anda Terverifikasi! ✓" : "Profil Belum Terverifikasi ⚠"}
+            </h4>
             <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-              Sistem kami terhubung langsung dengan database kependudukan desa. Pastikan data profil Anda sudah terverifikasi untuk menggunakan layanan instan.
+              {user?.is_verified 
+                ? `Selamat datang, ${user.nama}. Akun Anda dengan NIK ${user.nik.replace(/(\d{4})$/, '****')} terhubung langsung ke database desa. Anda bisa mengajukan surat secara instan.`
+                : "Sistem kami mendeteksi profil Anda belum diverifikasi oleh admin RT/RW. Harap hubungi petugas atau unggah dokumen pendukung untuk mengaktifkan fitur surat otomatis."}
             </p>
           </div>
-          <button className="whitespace-nowrap px-6 py-3 bg-white border border-slate-200 rounded-xl text-xs font-black hover:border-blue-500 hover:text-blue-600 transition-all">
-            Cek Status Profil
+          
+          {/* Mengubah warna tombol secara dinamis berdasarkan database status user */}
+          <button 
+            onClick={() => navigate('/profil')}
+            className={`whitespace-nowrap px-6 py-3 border rounded-xl text-xs font-black transition-all ${
+              user?.is_verified 
+                ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" 
+                : "bg-white border-slate-200 hover:border-blue-500 hover:text-blue-600"
+            }`}
+          >
+            {user?.is_verified ? "Lihat Detail Profil" : "Verifikasi Sekarang"}
           </button>
         </div>
       </section>

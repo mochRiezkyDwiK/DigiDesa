@@ -128,6 +128,7 @@ export const login = async (req: Request, res: Response) => {
 };
 
 // --- FUNGSI GET PROFILE (protected) ---
+// --- FUNGSI GET PROFILE (protected) ---
 export const getProfile = async (req: Request, res: Response) => {
     try {
         const payload = (req as any).user as JwtUserPayload | undefined;
@@ -152,10 +153,14 @@ export const getProfile = async (req: Request, res: Response) => {
             data: {
                 id: user.id,
                 nik: user.nik,
-                nama_lengkap: user.nama_lengkap,
+                // 🔴 DISESUAIKAN: Petakan nama_lengkap dari DB ke key 'nama' agar dibaca oleh React
+                nama: user.nama_lengkap, 
                 username: user.username,
                 no_hp: user.no_hp,
                 role: user.role,
+                // 🔴 TAMBAHAN: Pastikan kolom is_verified dikirim ke frontend
+                // Jika di model TypeORM belum ada, pastikan Anda menambahkannya di entitas User.ts
+                is_verified: (user as any).is_verified !== undefined ? Boolean((user as any).is_verified) : false,
                 created_at: user.created_at,
             }
         });

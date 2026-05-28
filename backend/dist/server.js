@@ -12,6 +12,9 @@ const authRoutes_1 = __importDefault(require("./src/routes/authRoutes"));
 const surat_1 = __importDefault(require("./src/routes/surat"));
 const adminRoutes_1 = __importDefault(require("./src/routes/adminRoutes"));
 const stats_1 = __importDefault(require("./src/routes/stats"));
+const userRoutes_1 = __importDefault(require("./src/routes/userRoutes"));
+const PengumumanRoutes_1 = __importDefault(require("./src/routes/PengumumanRoutes"));
+const TransparansiRoutes_1 = __importDefault(require("./src/routes/TransparansiRoutes"));
 if (!process.env.DATABASE_URL) {
     console.error("❌ DATABASE_URL tidak ditemukan di .env");
     process.exit(1);
@@ -30,8 +33,11 @@ app.use(express_1.default.json());
 app.use("/api/v1/auth", authRoutes_1.default);
 app.use("/api/v1/admin", adminRoutes_1.default);
 app.use("/api/v1/surat", surat_1.default);
-// 2. DAFTARKAN DI SINI
+app.use("/uploads", express_1.default.static("uploads"));
 app.use("/api/v1", stats_1.default);
+app.use("/api/v1/user", userRoutes_1.default);
+app.use("/api/v1", PengumumanRoutes_1.default);
+app.use("/api/v1", TransparansiRoutes_1.default);
 app.get("/", (_req, res) => {
     res.send("API DigiDesa Running...");
 });

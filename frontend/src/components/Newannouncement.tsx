@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
@@ -21,6 +21,19 @@ interface NewsItem {
   tag: string;
   emoji: string;
   important?: boolean;
+  link?: string;
+  image?: string;
+}
+
+interface PengumumanApiItem {
+  id: number;
+  judul: string;
+  kategori: string;
+  tanggal: string;
+  deskripsi: string;
+  prioritas: string;
+  link?: string;
+  gambar?: string;
 }
 
 const newsData: NewsItem[] = [
@@ -107,19 +120,52 @@ const typeConfig = {
   },
 };
 
+const mapPengumumanToNewsItem = (item: PengumumanApiItem): NewsItem => ({
+  id: String(item.id),
+  type: "pengumuman",
+  title: item.judul,
+  excerpt: item.deskripsi,
+  date: item.tanggal,
+  tag: item.kategori,
+  emoji: "📢",
+  important: item.prioritas === "tinggi",
+  link: item.link,
+  image: item.gambar,
+});
+
 const ITEMS_PER_PAGE = 3;
-const EASE_LIQUID = [0.25, 1, 0.5, 1];
+const EASE_LIQUID = [0.25, 1, 0.5, 1] as const;
 
 export default function NewsAnnouncements() {
+  const [newsItems, setNewsItems] = useState<NewsItem[]>(newsData);
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  const totalPages = Math.ceil(newsData.length / ITEMS_PER_PAGE);
-  const visibleItems = newsData.slice(
+  useEffect(() => {
+    const fetchPengumuman = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/v1/pengumuman?limit=6",
+        );
+        const result = await response.json();
+
+        if (result.success) {
+          setNewsItems(result.data.map(mapPengumumanToNewsItem));
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data pengumuman:", error);
+      }
+    };
+
+    fetchPengumuman();
+  }, []);
+
+  const totalPages = Math.ceil(newsItems.length / ITEMS_PER_PAGE);
+  const visibleItems = newsItems.slice(
     page * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
+    page * ITEMS_PER_PAGE + ITEMS_PER_PAGE,
   );
-  const importantItems = newsData.filter((n) => n.important);
+  const importantItems = newsItems.filter((n) => n.important);
 
   const handlePageChange = (newPage: number) => {
     setDirection(newPage > page ? 1 : -1);
@@ -129,7 +175,6 @@ export default function NewsAnnouncements() {
   return (
     <section className="py-20 bg-white w-full">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
-        
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div className="max-w-xl">
@@ -150,7 +195,7 @@ export default function NewsAnnouncements() {
           </div>
 
           <a
-            href="/berita"
+            href="/pengumuman"
             className="group flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors py-2 w-fit"
           >
             <span>Lihat Semua Informasi</span>
@@ -209,26 +254,36 @@ export default function NewsAnnouncements() {
                 return (
                   <a
                     key={item.id}
-                    href={`/berita/${item.id}`}
+                    href={item.link || `/pengumuman/${item.id}`}
                     className="group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/80 shadow-[0_3px_10px_-4px_rgba(0,0,0,0.03)] hover:border-blue-500/40 hover:shadow-[0_16px_32px_-12px_rgba(37,99,235,0.08)] transition-all duration-300 overflow-hidden no-underline"
                   >
                     {/* Card Media Header */}
-                    <div className="relative h-44 bg-gradient-to-br from-blue-50/40 to-slate-100/70 flex items-center justify-center border-b border-slate-100">
-                      <motion.div
-                        whileHover={{ scale: 1.12 }}
-                        transition={{ duration: 0.4, ease: EASE_LIQUID }}
-                        className="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center text-4xl select-none"
-                      >
-                        {item.emoji}
-                      </motion.div>
+                    <div className="relative h-44 bg-gradient-to-br from-blue-50/40 to-slate-100/70 flex items-center justify-center border-b border-slate-100 overflow-hidden">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <motion.div
+                          whileHover={{ scale: 1.12 }}
+                          transition={{ duration: 0.4, ease: EASE_LIQUID }}
+                          className="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center text-4xl select-none"
+                        >
+                          {item.emoji}
+                        </motion.div>
+                      )}
 
                       {/* Type Badge Floating */}
-                      <div
+                      {/* <div
                         className={`absolute top-4 left-4 flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border bg-white ${cfg.badge}`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}
+                        />
                         {cfg.label}
-                      </div>
+                      </div> */}
 
                       {item.important && (
                         <div className="absolute top-4 right-4 bg-rose-600 text-white text-[9px] font-black tracking-wider px-2 py-0.5 rounded-md shadow-sm">
@@ -324,7 +379,7 @@ export default function NewsAnnouncements() {
       </div>
 
       {/* Global Style Injector for Marquee effect */}
-      <style jsx global>{`
+      <style>{`
         @keyframes marquee {
           from { transform: translateX(0); }
           to { transform: translateX(-50%); }
