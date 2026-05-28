@@ -75,7 +75,7 @@ export default function Login() {
     setShowPassword(false);
   };
 
-  const handleAuthSubmit = async (e) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setIsLoading(true);
@@ -116,7 +116,7 @@ export default function Login() {
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("ERROR PADA MESIN AUTH SYSTEM FE:", error);
       alert(error.response?.data?.message || "Gagal memproses permohonan.");
     } finally {
