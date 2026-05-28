@@ -96,7 +96,7 @@ export const verifySuratAdmin = async (req: Request, res: Response) => {
         const { status, alasan_ditolak } = req.body; // status berupa: 'SELESAI' atau 'REJECTED'
 
         const surat = await suratRepository.findOne({
-            where: { id: parseInt(id) },
+            where: { id: parseInt(id as string) },
             relations: ["user"]
         });
 
