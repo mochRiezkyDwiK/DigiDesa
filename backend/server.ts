@@ -10,7 +10,10 @@ import statsRoutes from "./src/routes/stats";
 import userRoutes from "./src/routes/userRoutes";
 import PengumumanRoutes from "./src/routes/PengumumanRoutes";
 import TransparansiRoutes from "./src/routes/TransparansiRoutes";
+<<<<<<< HEAD
 import dashboardRoutes from "./src/routes/dashboardRoutes";
+=======
+>>>>>>> 52dee9d219a5ad0f86e6af6a63d4e3ee91ed52cf
 
 if (!process.env.DATABASE_URL) {
     console.error("❌ DATABASE_URL tidak ditemukan di .env");
@@ -38,7 +41,10 @@ app.use("/api/v1", statsRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1",PengumumanRoutes);
 app.use("/api/v1", TransparansiRoutes);
+<<<<<<< HEAD
 app.use("/api/v1/dashboard", dashboardRoutes);
+=======
+>>>>>>> 52dee9d219a5ad0f86e6af6a63d4e3ee91ed52cf
 
 app.get("/", (_req, res) => {
     res.send("API DigiDesa Running...");
