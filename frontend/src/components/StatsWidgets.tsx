@@ -19,9 +19,9 @@ export default function StatsWidget() {
           const dbData = response.data.data;
           
           setStats([
-            { key: "pengajuan", icon: FileText, value: dbData.pengajuanAktif, label: "Pengajuan aktif", color: "#60A5FA", valueColor: "#F1F5F9" },
-            { key: "warga", icon: Users, value: dbData.wargaTerdata, label: "Warga terdata", color: "#34D399", valueColor: "#F1F5F9" },
-            { key: "kepuasan", icon: TrendingUp, value: dbData.tingkatKepuasan || "97%", label: "Tingkat kepuasan", color: "#F472B6", valueColor: "#F1F5F9" },
+            { key: "pengajuan", icon: FileText, value: dbData.pengajuanAktif, label: "Pengajuan aktif", color: "#60A5FA", valueColor: "blue" },
+            { key: "warga", icon: Users, value: dbData.wargaTerdata, label: "Warga terdata", color: "#34D399", valueColor: "green" },
+            { key: "kepuasan", icon: TrendingUp, value: dbData.tingkatKepuasan || "97%", label: "Tingkat kepuasan", color: "#F472B6", valueColor: "pink" },
           ]);
         }
       } catch (error) {

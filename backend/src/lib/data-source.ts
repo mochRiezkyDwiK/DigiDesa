@@ -9,7 +9,6 @@ import { Surat } from "../models/Surat";
 
 dotenv.config();
 
-// Cek apakah kita pakai localhost atau bukan
 const DATABASE_URL = process.env.DATABASE_URL || "";
 const isLocal = DATABASE_URL.includes("localhost") || DATABASE_URL.includes("127.0.0.1");
 
@@ -19,7 +18,6 @@ export const AppDataSource = new DataSource({
     synchronize: false, // Biar tabel otomatis dibuat di HeidiSQL
     logging: false,
     entities: [User, Finance, Report, Wilayah, Keluarga, Surat ],
-    // LOGIC MATIKAN SSL JIKA LOKAL:
     ssl: isLocal ? false : {
         rejectUnauthorized: true
     }

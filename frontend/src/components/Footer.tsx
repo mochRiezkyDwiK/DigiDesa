@@ -22,7 +22,7 @@ function Footer() {
             transition={{ duration: 0.8, ease: EASE_SPRING }}
             className="bg-slate-900 text-white"
         >
-            <div className="max-w-7xl mx-auto px-8 py-12">
+            <div className="max-w-7xl mx-auto px-8 py-12 z-10">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     {/* Quick Links */}
                     <motion.div custom={0} variants={FADE_UP} initial="hidden" animate="visible" className="space-y-4">

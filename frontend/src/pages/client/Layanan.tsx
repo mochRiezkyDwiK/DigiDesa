@@ -36,7 +36,7 @@ const DAFTAR_LAYANAN = [
     time: "Instan",
     icon: MapPin,
     color: "blue",
-    link: '/create-surat?type=domisili'
+    link: '/buat-surat?type=domisili'
   },
   { 
     title: "Surat Keterangan Usaha (SKU)", 
@@ -45,7 +45,7 @@ const DAFTAR_LAYANAN = [
     time: "1 Hari Kerja",
     icon: CreditCard,
     color: "indigo",
-    link: '/create-surat?type=sku'
+    link: '/buat-surat?type=sku'
   },
   { 
     title: "Update Data Kartu Keluarga", 
@@ -54,7 +54,7 @@ const DAFTAR_LAYANAN = [
     time: "Sistem Terpusat",
     icon: Users,
     color: "violet",
-    link: '/create-surat?type=update-kk'
+    link: '/buat-surat?type=update-kk'
   }
 ];
 

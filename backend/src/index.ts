@@ -6,7 +6,7 @@ import cors from "cors";
 import { AppDataSource } from "./lib/data-source";
 import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes";
-import suratRoutes from "./routes/suratRoutes"; // ── BARU: Rute khusus untuk pengajuan surat ──
+import suratRoutes from "./routes/suratRoutes"; 
 
 if (!process.env.DATABASE_URL) {
     console.error("❌ DATABASE_URL tidak ditemukan di .env");
@@ -28,7 +28,7 @@ app.use(express.json());
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/surat", suratRoutes); // ── BARU: Rute khusus untuk pengajuan surat ──
+app.use("/api/v1/surat", suratRoutes); 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/", (_req, res) => {

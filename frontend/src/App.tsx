@@ -4,6 +4,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import WargaOnboarding from "./components/WargaOnboarding";
+import ProtectedRoute from "./components/protectRoute";
 
 // Client pages
 import Home from "./pages/client/Home";
@@ -43,6 +44,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
 
+          {/* onborading */}
+          {/* <Route path="/onboarding" element={<WargaOnboarding />} /> */}
+
           {/* Rute Warga (Client Area) */}
           <Route path="/dashboard-warga" element={<DashboardWarga />} />
           <Route path="/layanan" element={<Layanan />} />
@@ -58,12 +62,14 @@ function App() {
           <Route path="/bantuan" element={<Bantuan />} />
 
           {/* Rute Admin (Control Panel Area) */}
+          <Route element={<ProtectedRoute allowedRole="admin" />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/validasi" element={<AdminValidasiSurat />} />
           <Route path="/admin/laporan" element={<AdminLaporan />} />
           <Route path="/admin/penduduk" element={<AdminPenduduk />} />
           <Route path="/admin/keuangan" element={<AdminKeuangan />} />
           <Route path="/admin/pengaturan" element={<AdminPengaturan />} />
+          </Route>
         </Routes>
       </main>
 
