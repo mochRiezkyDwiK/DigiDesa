@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
-import { registerWarga, login, getProfile, submitOnboarding } from "../controllers/authController";
+import { registerWarga, login, getProfile } from "../controllers/authController";
 import { authenticateToken } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -24,6 +24,6 @@ router.get("/profile", authenticateToken, getProfile);
 router.get("/me", authenticateToken, getProfile);
 
 // BARU: Jalur Kirim Formulir Onboarding (Proteksi Token + Upload Single File KTP)
-router.post("/onboarding", authenticateToken, uploadKtp.single("foto_ktp"), submitOnboarding);
+// router.post("/onboarding", authenticateToken, uploadKtp.single("foto_ktp"), submitOnboarding);
 
 export default router;

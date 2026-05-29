@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
@@ -23,15 +23,15 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import StatsWidget from "../components/StatsWidgets";
 
-const EASE = [0.22, 1, 0.36, 1];
+const EASE = [0.22, 1, 0.36, 1] as const;
 
-const stagger = {
+const stagger: Variants = {
   hidden: {},
 
   visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
 
   visible: {

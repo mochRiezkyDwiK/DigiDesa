@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../lib/data-source";
 import { Report } from "../models/Report";
+import { User } from "../models/User";
 
 const reportRepository = AppDataSource.getRepository(Report);   
 export const getAllReports = async (req: Request, res: Response) => {
@@ -29,7 +30,6 @@ export const updateReportStatus = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: "Gagal update status" });
     }
 };
-<<<<<<< HEAD
 
 // --- FUNGSI VERIFY WARGA (Admin) ---
 export const verifyWarga = async (req: Request, res: Response) => {
@@ -57,5 +57,3 @@ export const verifyWarga = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: "Gagal memverifikasi warga" });
     }
 };
-=======
->>>>>>> 52dee9d219a5ad0f86e6af6a63d4e3ee91ed52cf
