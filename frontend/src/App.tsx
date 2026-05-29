@@ -45,7 +45,15 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           {/* onborading */}
-          {/* <Route path="/onboarding" element={<WargaOnboarding />} /> */}
+          <Route 
+            path="/onboarding" 
+            element={
+              <WargaOnboarding 
+                userStatus={localStorage.getItem("status") || "pending"} 
+                onVerified={() => window.location.href = "/dashboard-warga"} 
+              />
+            } 
+          />
 
           {/* Rute Warga (Client Area) */}
           <Route path="/dashboard-warga" element={<DashboardWarga />} />

@@ -51,7 +51,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [focused, setFocused] = useState<"nama" | "nik" | "hp" | "password" | null>(null);
+  const [focused, setFocused] = useState<
+    "nama" | "nik" | "hp" | "password" | null
+  >(null);
 
   const [nik, setNik] = useState("");
 
@@ -82,35 +84,51 @@ export default function Login() {
 
     try {
       if (isRegister) {
-        const response = await axios.post("http://localhost:5000/api/v1/auth/register", {
-          nama_lengkap: namaLengkap,
-          nik: nik,
-          username: nik,
-          no_hp: noHp,
-          password: password,
-        });
+        const response = await axios.post(
+          "http://localhost:5000/api/v1/auth/register",
+          {
+            nama_lengkap: namaLengkap,
+            nik: nik,
+            username: nik,
+            no_hp: noHp,
+            password: password,
+          },
+        );
 
         if (response.data.success) {
           alert("Akun warga berhasil didaftarkan! Silakan masuk.");
           toggleMode();
         }
       } else {
-        const response = await axios.post("http://localhost:5000/api/v1/auth/login", {
-          username: nik,
-          password: password,
-        });
+        const response = await axios.post(
+          "http://localhost:5000/api/v1/auth/login",
+          {
+            username: nik,
+            password: password,
+          },
+        );
 
         if (response.data.success) {
+        
+          const user = response.data.user;
+          const userStatus = response.data.user.status.toUpperCase();
+
+          console.log("data user:", user);
+          console.log("status:", user.status);
+          console.log("role:", user.role);
+
+
           localStorage.clear();
           localStorage.setItem("token", response.data.token);
-
           localStorage.setItem("user", JSON.stringify(response.data.user));
-
           localStorage.setItem("role", response.data.user.role || "");
+          localStorage.setItem("status", response.data.user.status || "");
 
           alert("Login Berhasil!");
           if (response.data.user.role === "ADMIN") {
             navigate("/admin");
+          } else if (userStatus === "PENDING") {
+            navigate("/onboarding");
           } else {
             navigate("/dashboard-warga");
           }
@@ -130,17 +148,17 @@ export default function Login() {
       <Navbar />
 
       {/* Background Grid Pattern */}
-      <div 
-        className="absolute inset-0 pointer-events-none z-0 opacity-60" 
-        style={{ 
-          backgroundImage: 'linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)', 
-          backgroundSize: '24px 24px' 
-        }} 
+      <div
+        className="absolute inset-0 pointer-events-none z-0 opacity-60"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       />
 
       {/* Main Content Layout */}
       <div className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-6 sm:px-12 md:px-16 pt-32 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-        
         {/* SISI KIRI: INFOGRAFIS */}
         <motion.section
           variants={stagger}
@@ -152,17 +170,24 @@ export default function Login() {
             variants={fadeUp}
             className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-slate-950 mb-6"
           >
-            Administrasi desa <span className="text-blue-600">{isRegister ? "selangkah lebih dekat." : "kini digital."}</span>
+            Administrasi desa{" "}
+            <span className="text-blue-600">
+              {isRegister ? "selangkah lebih dekat." : "kini digital."}
+            </span>
           </motion.h1>
 
           <motion.p
             variants={fadeUp}
             className="text-sm sm:text-base text-slate-500 leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10"
           >
-            Satu portal untuk seluruh layanan administrasi — dari pengajuan surat hingga laporan kependudukan, semua tersedia secara real-time.
+            Satu portal untuk seluruh layanan administrasi — dari pengajuan
+            surat hingga laporan kependudukan, semua tersedia secara real-time.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="w-full max-w-xl mx-auto lg:mx-0">
+          <motion.div
+            variants={fadeUp}
+            className="w-full max-w-xl mx-auto lg:mx-0"
+          >
             <StatsWidget />
           </motion.div>
 
@@ -170,7 +195,8 @@ export default function Login() {
             variants={fadeUp}
             className="mt-8 flex items-center justify-center lg:justify-start gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider"
           >
-            <MapPin size={14} className="text-blue-600" /> Melayani seluruh wilayah desa
+            <MapPin size={14} className="text-blue-600" /> Melayani seluruh
+            wilayah desa
           </motion.div>
         </motion.section>
 
@@ -184,25 +210,27 @@ export default function Login() {
           >
             {/* Header Tab Pilihan Atas */}
             <div className="grid grid-cols-3 gap-2 mb-8 text-center border-b border-slate-100 pb-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => isRegister && toggleMode()}
-                className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors cursor-pointer ${!isRegister ? 'bg-slate-50 text-blue-600' : 'text-slate-400 hover:text-slate-800'}`}
+                className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors cursor-pointer ${!isRegister ? "bg-slate-50 text-blue-600" : "text-slate-400 hover:text-slate-800"}`}
               >
                 <User size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">User name</span>
               </button>
-              <button 
+              <button
                 type="button"
                 onClick={() => !isRegister && toggleMode()}
-                className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors cursor-pointer ${isRegister ? 'bg-slate-50 text-blue-600' : 'text-slate-400 hover:text-slate-800'}`}
+                className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors cursor-pointer ${isRegister ? "bg-slate-50 text-blue-600" : "text-slate-400 hover:text-slate-800"}`}
               >
                 <UserPlus size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">UserPlus</span>
               </button>
-              <button 
-                type="button" 
-                onClick={() => alert("Login sidik jari terintegrasi perangkat keras.")}
+              <button
+                type="button"
+                onClick={() =>
+                  alert("Login sidik jari terintegrasi perangkat keras.")
+                }
                 className="flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-slate-800 transition-colors cursor-pointer"
               >
                 <Fingerprint size={18} className="mb-1" />
@@ -303,7 +331,9 @@ export default function Login() {
                   {!isRegister && (
                     <button
                       type="button"
-                      onClick={() => alert("Pemulihan akun silakan lapor RT setempat.")}
+                      onClick={() =>
+                        alert("Pemulihan akun silakan lapor RT setempat.")
+                      }
                       className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors bg-transparent cursor-pointer"
                     >
                       Lupa sandi?
@@ -323,7 +353,11 @@ export default function Login() {
                     onFocus={() => setFocused("password")}
                     onBlur={() => setFocused(null)}
                     required
-                    placeholder={isRegister ? "Buat kata sandi aman..." : "Masukkan kata sandi..."}
+                    placeholder={
+                      isRegister
+                        ? "Buat kata sandi aman..."
+                        : "Masukkan kata sandi..."
+                    }
                     className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200/60 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all"
                   />
                   <button
@@ -343,7 +377,10 @@ export default function Login() {
                     id="remember"
                     className="w-4 h-4 rounded border-slate-300 bg-slate-50 accent-blue-600 cursor-pointer"
                   />
-                  <label htmlFor="remember" className="text-xs font-medium text-slate-500 cursor-pointer select-none">
+                  <label
+                    htmlFor="remember"
+                    className="text-xs font-medium text-slate-500 cursor-pointer select-none"
+                  >
                     Ingat perangkat ini selama 30 hari
                   </label>
                 </div>
@@ -370,7 +407,9 @@ export default function Login() {
 
             <div className="my-6 flex items-center gap-3">
               <div className="flex-1 h-[1px] bg-slate-100" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">atau</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                atau
+              </span>
               <div className="flex-1 h-[1px] bg-slate-100" />
             </div>
 
@@ -379,7 +418,9 @@ export default function Login() {
               onClick={toggleMode}
               className="w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-medium text-xs tracking-wide transition-all cursor-pointer"
             >
-              {isRegister ? "Sudah Punya Akun? Masuk Portal" : "Daftar Akun Baru"}
+              {isRegister
+                ? "Sudah Punya Akun? Masuk Portal"
+                : "Daftar Akun Baru"}
             </button>
           </motion.div>
         </section>

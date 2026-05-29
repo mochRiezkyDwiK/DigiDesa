@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { EASE_SPRING } from "../../constants/animation";
 
-
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
@@ -55,8 +54,7 @@ interface SuratItem {
 }
 // ─── DATA STATIS ───────────────────────────────────────────────────────────────
 
-const QUICK_STATS = [
-];
+const QUICK_STATS = [];
 
 // 2. Buat Interface untuk Struktur Data Warga dari TypeORM
 interface UserProfile {
@@ -89,6 +87,21 @@ export default function DashboardWarga() {
           return;
         }
 
+        const checkAccess = () => {
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          console.log("Status dari LocalStorage di Dashboard:", user.status);
+          if (user.status && user.status.toUpperCase() === "pending") {
+            console.log("Terdeteksi PENDING, mengarahkan ke onboarding...");
+            navigate("/onboarding");
+            return true;
+          }
+
+          const isPending = checkAccess();
+          if (isPending) {
+            return;
+          }
+        };
+
         // 1. Ambil Data Profil
         const profileRes = await fetch("http://localhost:5000/api/v1/auth/me", {
           method: "GET",
@@ -98,7 +111,8 @@ export default function DashboardWarga() {
           },
         });
 
-        if (!profileRes.ok) throw new Error(`Profile API Error: Status ${profileRes.status}`);
+        if (!profileRes.ok)
+          throw new Error(`Profile API Error: Status ${profileRes.status}`);
         const profileData = await profileRes.json();
         if (profileData.success) setUser(profileData.data);
 

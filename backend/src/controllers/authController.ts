@@ -118,7 +118,8 @@ export const login = async (req: Request, res: Response) => {
             token,
             user: {
                 nama_lengkap: user.nama_lengkap,
-                role: user.role
+                role: user.role,
+                status: user.status_akun || "pending"
             }
         });
     } catch (error) {
@@ -127,7 +128,6 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
-// --- FUNGSI GET PROFILE (protected) ---
 // --- FUNGSI GET PROFILE (protected) ---
 export const getProfile = async (req: Request, res: Response) => {
     try {
@@ -153,19 +153,22 @@ export const getProfile = async (req: Request, res: Response) => {
             data: {
                 id: user.id,
                 nik: user.nik,
-                // 🔴 DISESUAIKAN: Petakan nama_lengkap dari DB ke key 'nama' agar dibaca oleh React
                 nama: user.nama_lengkap, 
                 username: user.username,
                 no_hp: user.no_hp,
                 role: user.role,
-                // 🔴 TAMBAHAN: Pastikan kolom is_verified dikirim ke frontend
-                // Jika di model TypeORM belum ada, pastikan Anda menambahkannya di entitas User.ts
                 is_verified: (user as any).is_verified !== undefined ? Boolean((user as any).is_verified) : false,
                 created_at: user.created_at,
+                status_akun: user.status_akun,
             }
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Gagal mengambil profile" });
     }
+};
+
+// --- FUNGSI SUBMIT ONBOARDING (protected + upload) ---
+export const submitOnboarding = async (req: Request, res: Response) => {
+    res.json({ success: true, message: "Formulir onboarding diterima!" });
 };
