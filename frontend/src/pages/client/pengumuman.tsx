@@ -100,15 +100,17 @@ export default function Pengumuman() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar />
 
-      <main className="flex-grow pt-24 pb-16">
+      <main className="flex-grow pt-16 pb-16">
         {/* Header Section */}
-        <div className="max-w-7xl mx-auto px-6 mb-12">
-          <h1 className="text-4xl font-extrabold text-slate-900 mb-2">
-            Pengumuman Desa
-          </h1>
-          <p className="text-slate-600 text-lg">
-            Informasi terkini dari Pemerintah Desa Digital.
-          </p>
+        <div className="max-w-full mx-auto px-6 mb-12 h-64 flex items-center justify-center border z-[-1]" style={{ backgroundImage: "url('/image/kbb-vector.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
+          <div className="max-w-full border relative">
+            {/* <h1 className="text-4xl font-extrabold text-slate-900 mb-2">
+              Pengumuman Desa
+            </h1>
+            <p className="text-slate-600 text-lg">
+              Informasi terkini dari Pemerintah Desa Digital.
+            </p> */}
+          </div>
         </div>
 
         {/* Filter Section */}
