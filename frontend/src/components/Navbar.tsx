@@ -96,11 +96,11 @@ function Navbar() {
           {[
             { name: "Transparansi", path: "/transparansi-anggaran" },
             { name: "Pengumuman", path: "/pengumuman" },
-            { name: "Bantuan", path: "/bantuan" }
+            { name: "Bantuan", link: "https://cekbansos.kemensos.go.id/" }
           ].map((item) => (
             <button
               key={item.name}
-              onClick={() => navigate(item.path)}
+              onClick={() => item.link ? window.open(item.link, "_blank") : item.path && navigate(item.path)}
               className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
             >
               {item.name}
