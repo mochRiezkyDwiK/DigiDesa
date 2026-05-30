@@ -3,7 +3,6 @@ import { getPengumuman } from "../controllers/PengumumanController";
 
 const router = Router();
 
-// 🔥 DAFTARKAN DI SINI
-router.get("/pengumuman", getPengumuman);
+router.get("/", getPengumuman);
 
 export default router;
