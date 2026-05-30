@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { EASE_SPRING } from "../../constants/animation";
+import  axios  from "axios"
 import { 
   User, 
   Mail, 
@@ -34,6 +35,27 @@ const FADE_UP = {
 
 export default function Profil() {
   const navigate = useNavigate();
+  const [status, setStatus] = useState("PENDING");
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:5000/api/v1/auth/profile", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.data?.success) {
+          const fetchedStatus = res.data.data.status_akun || "PENDING";
+          setStatus(fetchedStatus.toUpperCase());
+          localStorage.setItem("status", fetchedStatus.toUpperCase());
+        }
+      } catch (err) {
+        console.error("Gagal ambil status:", err);
+      }
+    };
+    fetchStatus();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased pb-20">
@@ -61,6 +83,7 @@ export default function Profil() {
         
         {/* ── PROFILE INFO CARD ── */}
         <motion.div 
+        
           initial="hidden" animate="visible" variants={FADE_UP} custom={0}
           className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center md:items-end gap-8"
         >
