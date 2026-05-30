@@ -2,9 +2,9 @@ import {
   Entity, 
   PrimaryGeneratedColumn, 
   Column, 
-  CreateDateColumn, 
-  ManyToOne, 
-  JoinColumn 
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn
 } from "typeorm";
 import { Wilayah } from "./Wilayah";
 import { Keluarga } from "./Keluarga";
@@ -35,11 +35,22 @@ export class User {
     @Column({ type: "varchar", length: 255, nullable: true })
     alamat!: string;
 
+    // Catatan: Jika sudah pakai Wilayah (FK), kolom rt & rw di bawah ini 
+    // sebenarnya bisa dihapus agar tidak duplikat data. 
+    // Tapi saya biarkan dulu jika kamu masih membutuhkannya.
     @Column({ type: "varchar", length: 5, nullable: true })
     rt!: string;
 
     @Column({ type: "varchar", length: 5, nullable: true })
     rw!: string;
+
+    @ManyToOne(() => Wilayah, (wilayah) => wilayah.penduduk, { nullable: true, onDelete: "SET NULL" })
+    @JoinColumn({ name: "wilayahId" })
+    wilayah?: Wilayah;
+
+    @ManyToOne(() => Keluarga, (keluarga) => keluarga.anggota_keluarga, { nullable: true })
+    @JoinColumn({ name: "no_kk", referencedColumnName: "no_kk" })
+    keluarga?: Keluarga;
 
     // ── KOLOM BARU UNTUK SISTEM VERIFICATION GATE ──
 
@@ -64,19 +75,6 @@ export class User {
         default: "WARGA"
     })
     role!: string;
-
-    // 🔴 TAMBAHAN: Kolom status verifikasi akun warga
-    @Column({ type: "boolean", default: false })
-    is_verified!: boolean;
-
-    // --- RELASI WILAYAH ---
-    @ManyToOne(() => Wilayah, (wilayah) => wilayah.penduduk)
-    @JoinColumn({ name: "wilayahId" }) 
-    wilayah!: Wilayah;
-
-    @ManyToOne(() => Keluarga, (keluarga) => keluarga.anggota_keluarga)
-    @JoinColumn({ name: "no_kk" }) 
-    keluarga!: Keluarga;
 
     @CreateDateColumn()
     created_at!: Date;

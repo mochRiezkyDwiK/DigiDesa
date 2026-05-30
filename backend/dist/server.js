@@ -14,7 +14,6 @@ const adminRoutes_1 = __importDefault(require("./src/routes/adminRoutes"));
 const stats_1 = __importDefault(require("./src/routes/stats"));
 const userRoutes_1 = __importDefault(require("./src/routes/userRoutes"));
 const PengumumanRoutes_1 = __importDefault(require("./src/routes/PengumumanRoutes"));
-const TransparansiRoutes_1 = __importDefault(require("./src/routes/TransparansiRoutes"));
 if (!process.env.DATABASE_URL) {
     console.error("❌ DATABASE_URL tidak ditemukan di .env");
     process.exit(1);
@@ -37,7 +36,6 @@ app.use("/uploads", express_1.default.static("uploads"));
 app.use("/api/v1", stats_1.default);
 app.use("/api/v1/user", userRoutes_1.default);
 app.use("/api/v1", PengumumanRoutes_1.default);
-app.use("/api/v1", TransparansiRoutes_1.default);
 app.get("/", (_req, res) => {
     res.send("API DigiDesa Running...");
 });
@@ -50,5 +48,12 @@ data_source_1.AppDataSource.initialize()
         console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
 })
-    .catch((err) => console.error("❌ Database Error:", err));
+    .catch((err) => {
+    console.error("❌ Database Error:", err);
+    // Start server anyway in degraded mode so frontend/dev tasks can continue.
+    const PORT = Number(process.env.PORT) || 5000;
+    app.listen(PORT, () => {
+        console.log(`⚠️ Server running in degraded mode on http://localhost:${PORT} (DB unavailable)`);
+    });
+});
 //# sourceMappingURL=server.js.map
