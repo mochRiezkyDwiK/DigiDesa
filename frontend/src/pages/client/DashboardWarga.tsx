@@ -33,7 +33,7 @@ const FADE_UP = {
 };
 
 interface UserProfile {
-  nama: string;
+  nama_lengkap: string;
   nik: string;
   rw: string | null;
   is_verified: boolean;
@@ -55,15 +55,6 @@ interface SuratItem {
 // ─── DATA STATIS ───────────────────────────────────────────────────────────────
 
 const QUICK_STATS = [];
-
-// 2. Buat Interface untuk Struktur Data Warga dari TypeORM
-interface UserProfile {
-  nama: string;
-  nik: string;
-  rt: string | null;
-  rw: string | null;
-  is_verified: boolean;
-}
 
 export default function DashboardWarga() {
   const [activeTab, setActiveTab] = useState("Ringkasan");
@@ -192,7 +183,7 @@ export default function DashboardWarga() {
               <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
                 <div className="text-right hidden sm:block">
                   <p className="text-[13px] font-black text-slate-900 leading-none">
-                    {user?.nama}
+                    {user?.nama_lengkap}
                   </p>
                   <p className="text-[10px] font-bold text-slate-400 mt-1">
                     RT {user?.rt || "-"} / RW {user?.rw || "-"}
@@ -200,7 +191,7 @@ export default function DashboardWarga() {
                 </div>
                 <img
                   className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-4 ring-slate-50 cursor-pointer"
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.nama}`}
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.nama_lengkap}`}
                   alt="Avatar"
                   onClick={handleLogout}
                   title="Klik untuk Logout"
