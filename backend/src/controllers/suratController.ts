@@ -27,11 +27,38 @@ export const createSurat = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: "User warga tidak ditemukan!" });
         }
 
+        const alasanKeperluan = typeof keperluan === "string" ? keperluan.trim() : "";
+        if (!alasanKeperluan) {
+            return res.status(400).json({ success: false, message: "Alasan keperluan surat wajib diisi!" });
+        }
+
+        const alamatDb = (user.alamat || "").trim();
+        const rtDb = (user.rt || "").trim();
+        const rwDb = (user.rw || "").trim();
+
+        if (!alamatDb || !rtDb || !rwDb) {
+            return res.status(400).json({
+                success: false,
+                message: "Data domisili (alamat, RT, RW) belum lengkap di profil. Silakan lengkapi profil warga terlebih dahulu."
+            });
+        }
+
+        const detailKeperluan = [
+            "[DATA DOMISILI OTOMATIS DARI DATABASE]",
+            `Nama: ${user.nama_lengkap || "-"}`,
+            `NIK: ${user.nik || "-"}`,
+            `Alamat: ${alamatDb}`,
+            `RT/RW: ${rtDb}/${rwDb}`,
+            "",
+            "[ALASAN PENGAJUAN SURAT]",
+            alasanKeperluan
+        ].join("\n");
+
         // Cetak object surat baru
         const baruSurat = new Surat();
         baruSurat.user = user;
         baruSurat.jenis_surat = jenis_surat;
-        baruSurat.keperluan = keperluan;
+        baruSurat.keperluan = detailKeperluan;
         baruSurat.status = StatusSurat.PENDING; // Otomatis standby di-review RT
 
         await suratRepository.save(baruSurat);
@@ -92,11 +119,15 @@ export const getAllSuratAdmin = async (req: Request, res: Response) => {
 // 4. Admin Mengeksekusi Otoritas Surat (ACC / REJECT)
 export const verifySuratAdmin = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = Number(req.params.id);
         const { status, alasan_ditolak } = req.body; // status berupa: 'SELESAI' atau 'REJECTED'
 
+        if (!Number.isFinite(id)) {
+            return res.status(400).json({ success: false, message: "ID surat tidak valid" });
+        }
+
         const surat = await suratRepository.findOne({
-            where: { id: parseInt(id) },
+            where: { id },
             relations: ["user"]
         });
 

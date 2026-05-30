@@ -7,7 +7,6 @@ import {
   XCircle, 
   CheckCircle2, 
   Loader2, 
-  User, 
   FileText, 
   Home,
   LogOut
@@ -27,6 +26,9 @@ export default function WargaOnboarding({ userStatus, onVerified }: OnboardingPr
   // State Form Mandiri Warga
   const [formData, setFormData] = useState({
     no_kk: "",
+    alamat: "",
+    rt: "",
+    rw: "",
     status_hubungan: "Kepala Keluarga",
     status_tinggal: "TETAP",
     foto_ktp: null as File | null
@@ -40,9 +42,19 @@ export default function WargaOnboarding({ userStatus, onVerified }: OnboardingPr
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
+        const profile = res.data.data;
         const currentStatus = res.data.data.status_akun;
         setStatus(currentStatus);
         setAlasanDitolak(res.data.data.alasan_ditolak || "");
+        setFormData((prev) => ({
+          ...prev,
+          no_kk: profile.no_kk || prev.no_kk,
+          alamat: profile.alamat || prev.alamat,
+          rt: profile.rt || prev.rt,
+          rw: profile.rw || prev.rw,
+          status_hubungan: profile.status_hubungan || prev.status_hubungan,
+          status_tinggal: profile.status_tinggal || prev.status_tinggal,
+        }));
         
         // Jika ternyata sudah di-acc Admin saat di-refresh
         if (currentStatus === "VERIFIED_TETAP" || currentStatus === "VERIFIED_PENDATANG") {
@@ -65,10 +77,15 @@ export default function WargaOnboarding({ userStatus, onVerified }: OnboardingPr
     e.preventDefault();
     if (!formData.foto_ktp) return alert("Silakan unggah foto KTP/KK terlebih dahulu!");
     if (formData.no_kk.length !== 16) return alert("Nomor Kartu Keluarga (KK) harus tepat 16 digit angka!");
+    if (!formData.alamat.trim()) return alert("Alamat wajib diisi.");
+    if (!formData.rt.trim() || !formData.rw.trim()) return alert("RT dan RW wajib diisi.");
 
     setIsLoading(true);
     const data = new FormData();
     data.append("no_kk", formData.no_kk);
+    data.append("alamat", formData.alamat);
+    data.append("rt", formData.rt);
+    data.append("rw", formData.rw);
     data.append("status_hubungan", formData.status_hubungan);
     data.append("status_tinggal", formData.status_tinggal);
     data.append("foto_ktp", formData.foto_ktp);
@@ -96,7 +113,7 @@ export default function WargaOnboarding({ userStatus, onVerified }: OnboardingPr
   // 3. Fungsi Logout (Jika warga ingin keluar akun)
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    globalThis.location.href = "/login";
   };
 
   if (isFetchingProfile) return (
@@ -161,6 +178,47 @@ export default function WargaOnboarding({ userStatus, onVerified }: OnboardingPr
                     placeholder="Masukkan 16 digit nomor KK" 
                   />
                   <FileText size={16} className="absolute left-4 text-slate-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">Alamat Lengkap</label>
+                <div className="relative flex items-start">
+                  <textarea
+                    required
+                    value={formData.alamat}
+                    onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
+                    rows={2}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold focus:border-blue-600 outline-none transition-colors resize-none"
+                    placeholder="Masukkan alamat lengkap domisili saat ini"
+                  />
+                  <Home size={16} className="absolute left-4 top-4 text-slate-400" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">RT</label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.rt}
+                    onChange={(e) => setFormData({ ...formData, rt: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-bold focus:border-blue-600 outline-none transition-colors"
+                    placeholder="Contoh: 02"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1.5 block">RW</label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.rw}
+                    onChange={(e) => setFormData({ ...formData, rw: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-bold focus:border-blue-600 outline-none transition-colors"
+                    placeholder="Contoh: 10"
+                  />
                 </div>
               </div>
 

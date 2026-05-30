@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { EASE_SPRING } from "../../constants/animation";
 import axios from "axios"; 
 import { 
-  FileText, ArrowLeft, Send, CheckCircle2, User, 
+  ArrowLeft, Send, CheckCircle2, User, 
   MapPin, Fingerprint
 } from "lucide-react";
 
@@ -44,8 +44,6 @@ export default function Surat() {
     keperluan: "", 
     noHp: ""
   });
-  const [apiResponse, setApiResponse] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   // ── SINKRONISASI ASLI DARI DATABASE MYSQL ──
   useEffect(() => {
@@ -101,24 +99,18 @@ export default function Surat() {
     setLoading(true);
 
     try {
-      const detailKeperluan = `
-        [PROFIL PEMOHON]
-        Nama: ${formData.namaLengkap}
-        NIK: ${formData.nik}
-        Lahir: ${formData.tempatLahir}, ${formData.tanggalLahir}
-        Gender: ${formData.jenisKelamin} | Agama: ${formData.agama}
-        Pekerjaan: ${formData.pekerjaan} | Status: ${formData.statusPerkawinan}
-        Alamat: ${formData.alamat} (RT ${formData.rt} / RW ${formData.rw})
-        
-        [ALASAN PENGALIRAN SURAT]
-        ${formData.keperluan}
-      `;
+      const alasanKeperluan = formData.keperluan.trim();
+      if (!alasanKeperluan) {
+        alert("Alasan pengajuan surat wajib diisi.");
+        setLoading(false);
+        return;
+      }
 
       const response = await axios.post(
         "http://localhost:5000/api/v1/surat/ajukan",
         {
           jenis_surat: formData.jenisSurat, 
-          keperluan: detailKeperluan
+          keperluan: alasanKeperluan
         },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -192,7 +184,6 @@ export default function Surat() {
                         <option value="SKD">Surat Keterangan Domisili (SKD)</option>
                         <option value="SKU">Surat Keterangan Usaha (SKU)</option>
                         <option value="SKTM">Surat Keterangan Tidak Mampu (SKTM)</option>
-                        <option value="SKP">Surat Pengantar SKCK</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -264,18 +255,20 @@ export default function Surat() {
                     <MapPin size={16} /> Domisili Lingkungan
                   </h3>
 
+                  <p className="text-[11px] font-bold text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+                    Alamat, RT, dan RW otomatis diambil dari database profil warga.
+                  </p>
+
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Alamat Rumah Lengkap</label>
                     <textarea 
                       name="alamat" 
                       rows={2} 
                       value={formData.alamat} 
-                      onChange={handleChange} 
-                      disabled={!!dbUser?.alamat} 
+                      readOnly
+                      disabled
                       placeholder="Ketik Alamat Rumah Sekarang..."
-                      className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all resize-none ${
-                        dbUser?.alamat ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
-                      }`} 
+                      className="w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all resize-none bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                     />
                   </div>
                   
@@ -286,12 +279,10 @@ export default function Surat() {
                         type="text" 
                         name="rt" 
                         value={formData.rt} 
-                        onChange={handleChange} 
-                        disabled={!!dbUser?.rt} 
+                        readOnly
+                        disabled
                         placeholder="00"
-                        className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all ${
-                          dbUser?.rt ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
-                        }`} 
+                        className="w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                       />
                     </div>
                     <div className="space-y-2">
@@ -300,12 +291,10 @@ export default function Surat() {
                         type="text" 
                         name="rw" 
                         value={formData.rw} 
-                        onChange={handleChange} 
-                        disabled={!!dbUser?.rw} 
+                        readOnly
+                        disabled
                         placeholder="00"
-                        className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all ${
-                          dbUser?.rw ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
-                        }`} 
+                        className="w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                       />
                     </div>
                   </div>

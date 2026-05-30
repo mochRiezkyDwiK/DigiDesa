@@ -16,7 +16,7 @@ const isLocal = DATABASE_URL.includes("localhost") || DATABASE_URL.includes("127
 export const AppDataSource = new DataSource({
     type: "mysql",
     url: DATABASE_URL,
-    synchronize: false, // Biar tabel otomatis dibuat di HeidiSQL
+    synchronize: false, // Auto-create/alter columns — set false setelah kolom terbentuk
     logging: false,
     entities: [User, Finance, Report, Wilayah, Keluarga, Surat ],
     // LOGIC MATIKAN SSL JIKA LOKAL:
@@ -24,9 +24,4 @@ export const AppDataSource = new DataSource({
         rejectUnauthorized: true
     }
 });
-
-AppDataSource.initialize()
-    .then(() => {
-        console.log("✅ Database Connected (Local MySQL)");
-    })
-    .catch((error) => console.log("❌ Database Error:", error));
+// NOTE: initialize() dipanggil HANYA dari index.ts, tidak di sini

@@ -19,6 +19,7 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  LogOut,
 } from "lucide-react";
 import { EASE_SPRING } from "../../constants/animation";
 
@@ -55,6 +56,12 @@ export default function AdminValidasiSurat() {
   const [rejectReason, setRejectReason] = useState("");
   const [btnLoading, setBtnLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   const token = localStorage.getItem("token");
 
@@ -189,6 +196,16 @@ export default function AdminValidasiSurat() {
             );
           })}
         </nav>
+
+        <div className="p-5 border-t border-slate-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+          >
+            <LogOut size={18} />
+            Keluar Sistem
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-h-screen min-w-0">

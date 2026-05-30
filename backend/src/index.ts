@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import "dotenv/config";
+console.log("DEBUG DATABASE_URL:", process.env.DATABASE_URL); // Tambahin ini
 import express from "express";
 import path from "path";
 import cors from "cors";
@@ -7,6 +8,7 @@ import { AppDataSource } from "./lib/data-source";
 import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import suratRoutes from "./routes/suratRoutes"; // ── BARU: Rute khusus untuk pengajuan surat ──
+import userRoutes from "./routes/userRoutes";
 
 if (!process.env.DATABASE_URL) {
     console.error("❌ DATABASE_URL tidak ditemukan di .env");
@@ -29,6 +31,7 @@ app.use(express.json());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/surat", suratRoutes); // ── BARU: Rute khusus untuk pengajuan surat ──
+app.use("/api/v1/user", userRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/", (_req, res) => {

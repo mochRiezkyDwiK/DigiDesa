@@ -140,9 +140,12 @@ export const getProfile = async (req: Request, res: Response) => {
             data: {
                 id: user.id,
                 nik: user.nik,
-                nama_lengkap: user.user_id ? user.nama_lengkap : user.nama_lengkap, // Menjaga reaktivitas object data
+                nama_lengkap: user.nama_lengkap,
                 username: user.username,
                 no_hp: user.no_hp,
+                alamat: user.alamat,
+                rt: user.rt,
+                rw: user.rw,
                 role: user.role,
                 status_akun: user.status_akun,
                 no_kk: user.no_kk,
@@ -167,7 +170,19 @@ export const submitOnboarding = async (req: Request, res: Response) => {
             return res.status(401).json({ success: false, message: "Unauthorized Token" });
         }
 
-        const { no_kk, status_hubungan, status_tinggal } = req.body;
+        const { no_kk, status_hubungan, status_tinggal, alamat, rt, rw } = req.body;
+        const normalizedNoKk = typeof no_kk === "string" ? no_kk.trim() : "";
+        const normalizedAlamat = typeof alamat === "string" ? alamat.trim() : "";
+        const normalizedRt = typeof rt === "string" ? rt.trim() : "";
+        const normalizedRw = typeof rw === "string" ? rw.trim() : "";
+
+        if (normalizedNoKk?.length !== 16) {
+            return res.status(400).json({ success: false, message: "Nomor KK wajib 16 digit." });
+        }
+
+        if (!normalizedAlamat || !normalizedRt || !normalizedRw) {
+            return res.status(400).json({ success: false, message: "Alamat, RT, dan RW wajib diisi." });
+        }
         
         // Ambil path foto KTP yang diupload via Multer
         const foto_ktp = req.file ? `/uploads/ktp/${req.file.filename}` : null;
@@ -184,7 +199,10 @@ export const submitOnboarding = async (req: Request, res: Response) => {
         }
 
         // Update data kependudukan mandiri
-        user.no_kk = no_kk;
+        user.no_kk = normalizedNoKk;
+        user.alamat = normalizedAlamat;
+        user.rt = normalizedRt;
+        user.rw = normalizedRw;
         user.status_hubungan = status_hubungan;
         user.status_tinggal = status_tinggal;
         if (foto_ktp) user.foto_ktp = foto_ktp;

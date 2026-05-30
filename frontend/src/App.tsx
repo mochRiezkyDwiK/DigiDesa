@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 // Global Components
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+
 import WargaOnboarding from "./components/WargaOnboarding";
 
 // Client pages

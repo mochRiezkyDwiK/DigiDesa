@@ -2,9 +2,9 @@ import {
   Entity, 
   PrimaryGeneratedColumn, 
   Column, 
-  CreateDateColumn, 
-  ManyToOne, 
-  JoinColumn 
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn
 } from "typeorm";
 import { Wilayah } from "./Wilayah";
 import { Keluarga } from "./Keluarga";
@@ -44,6 +44,14 @@ export class User {
     @Column({ type: "varchar", length: 5, nullable: true })
     rw!: string;
 
+    @ManyToOne(() => Wilayah, (wilayah) => wilayah.penduduk, { nullable: true, onDelete: "SET NULL" })
+    @JoinColumn({ name: "wilayahId" })
+    wilayah?: Wilayah;
+
+    @ManyToOne(() => Keluarga, (keluarga) => keluarga.anggota_keluarga, { nullable: true })
+    @JoinColumn({ name: "no_kk", referencedColumnName: "no_kk" })
+    keluarga?: Keluarga;
+
     // ── KOLOM BARU UNTUK SISTEM VERIFICATION GATE ──
 
     @Column({ type: "varchar", length: 30, default: "INCOMPLETE" })
@@ -67,16 +75,6 @@ export class User {
         default: "WARGA"
     })
     role!: string;
-
-    // --- RELASI WILAYAH ---
-    // Sekarang diletakkan di luar kolom role
-    @ManyToOne(() => Wilayah, (wilayah) => wilayah.penduduk)
-    @JoinColumn({ name: "wilayahId" }) 
-    wilayah!: Wilayah;
-
-    @ManyToOne(() => Keluarga, (keluarga) => keluarga.anggota_keluarga)
-    @JoinColumn({ name: "no_kk" }) // Menghubungkan ke PK di tabel Keluarga
-    keluarga!: Keluarga;
 
     @CreateDateColumn()
     created_at!: Date;

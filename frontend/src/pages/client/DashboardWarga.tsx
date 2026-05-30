@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import WargaOnboarding from "../../components/WargaOnboarding";
+import StatusTimeline from "../../components/StatusTimeline";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom"; 
-import axios from "axios"; // ── BARU: Import Axios untuk sinkronisasi database ──
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -45,32 +46,30 @@ export default function DashboardWarga() {
   const [activeTab, setActiveTab] = useState("Ringkasan");
   const navigate = useNavigate(); 
   
-  // ── BARU: State Dinamis Penampung Data Riwayat Surat dari Database ──
   const [suratList, setSuratList] = useState<any[]>([]);
+  const [laporanList, setLaporanList] = useState<any[]>([]);
 
-  // ── SINKRONISASI SESSION USER & GATE PEMBATAS ──
   const token = localStorage.getItem("token");
   const userJson = localStorage.getItem("user");
   const userSession = userJson ? JSON.parse(userJson) : null;
   const [statusAkun, setStatusAkun] = useState(userSession?.status_akun || "INCOMPLETE");
 
-  // ── BARU: Fetching Riwayat Surat Menggunakan useEffect ──
   useEffect(() => {
-    const fetchRiwayatSurat = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/v1/surat/riwayat", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (response.data.success) {
-          setSuratList(response.data.data);
-        }
+        const headers = { Authorization: `Bearer ${token}` };
+        const [suratRes, laporanRes] = await Promise.all([
+          axios.get("http://localhost:5000/api/v1/surat/riwayat", { headers }).catch(() => null),
+          axios.get("http://localhost:5000/api/v1/user/pengaduan/riwayat", { headers }).catch(() => null),
+        ]);
+        if (suratRes?.data?.success) setSuratList(suratRes.data.data);
+        if (laporanRes?.data?.success) setLaporanList(laporanRes.data.data);
       } catch (error) {
-        console.error("GAGAL FETCHING SURAT DI DASHBOARD:", error);
+        console.error("GAGAL FETCHING DATA DASHBOARD:", error);
       }
     };
-
     if (statusAkun === "VERIFIED_TETAP" || statusAkun === "VERIFIED_PENDATANG") {
-      fetchRiwayatSurat();
+      fetchData();
     }
   }, [statusAkun, token]);
 
@@ -88,12 +87,12 @@ export default function DashboardWarga() {
     );
   }
 
-  // ── BARU: Otomatisasi Perhitungan Anggota Quick Stats Berdasarkan Data Asli DB ──
   const jumlahSuratAktif = suratList.filter(s => s.status === "PENDING" || s.status === "PROSES").length;
+  const jumlahLaporanAktif = laporanList.filter(l => l.status !== "SELESAI").length;
 
   const QUICK_STATS = [
     { label: "Surat Aktif", value: String(jumlahSuratAktif), icon: FileText, trend: "Real-time", color: "blue", path: "/layanan" },
-    { label: "Laporan", value: "0", icon: MessageSquare, trend: "Clear", color: "indigo", path: "/lapor" },
+    { label: "Laporan Saya", value: String(laporanList.length), icon: MessageSquare, trend: `${jumlahLaporanAktif} aktif`, color: "indigo", path: "#", tab: "Laporan" },
     { label: "Poin Warga", value: "1.250", icon: Sparkles, trend: "Top 5%", color: "violet", path: "#" },
   ];
 
@@ -119,26 +118,23 @@ export default function DashboardWarga() {
           </div>
         </div>
 
-        {/* Menu Navigasi Mix: Tab Internal & Link External Halaman Lama */}
         <nav className="flex-1 px-6 space-y-1.5 mt-4">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 ml-4">Layanan Warga</p>
           {[
-            { n: "Ringkasan Dashboard", i: LayoutDashboard, p: "/dashboard-warga", isTab: true, tabTarget: "Ringkasan" },
-            { n: "Transparansi Kas", i: CreditCard, p: "/dashboard-warga", isTab: true, tabTarget: "Transparansi" },
+            { n: "Ringkasan Dashboard", i: LayoutDashboard, isTab: true, tabTarget: "Ringkasan" },
+            { n: "Laporan Saya", i: MessageSquare, isTab: true, tabTarget: "Laporan" },
+            { n: "Transparansi Kas", i: CreditCard, isTab: true, tabTarget: "Transparansi" },
             { n: "Ajukan E-Surat", i: FileText, p: "/layanan", isTab: false },
             { n: "Lapor Keluhan", i: MessageSquare, p: "/lapor", isTab: false },
-            { n: "Profil Saya", i: User, p: "/profile", isTab: false },
+            { n: "Profil Saya", i: User, p: "/profil", isTab: false },
           ].map((item) => {
             const isActive = item.isTab ? activeTab === item.tabTarget : false;
             return (
               <button
                 key={item.n}
                 onClick={() => {
-                  if (item.isTab) {
-                    setActiveTab(item.tabTarget!);
-                  } else {
-                    navigate(item.p); 
-                  }
+                  if (item.isTab) setActiveTab(item.tabTarget!);
+                  else navigate(item.p!);
                 }}
                 className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-[13px] font-bold transition-all ${
                   isActive ? "bg-blue-600 text-white shadow-lg shadow-blue-600/10" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
@@ -211,12 +207,23 @@ export default function DashboardWarga() {
 
                 {/* QUICK STATS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {QUICK_STATS.map((s, i) => (
-                    <motion.div key={s.label} whileHover={{ y: -5, transition: { duration: 0.2 } }} onClick={() => { if(s.path !== "#") navigate(s.path) }} className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.03)] flex items-center gap-6 group cursor-pointer">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 transition-colors"><s.icon className="text-slate-400 group-hover:text-blue-600 transition-colors" size={26} strokeWidth={2.5} /></div>
+                  {QUICK_STATS.map((s) => (
+                    <motion.div
+                      key={s.label}
+                      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                      onClick={() => {
+                        if ((s as any).tab) setActiveTab((s as any).tab);
+                        else if (s.path !== "#") navigate(s.path!);
+                      }}
+                      className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.03)] flex items-center gap-6 group cursor-pointer"
+                    >
+                      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 transition-colors">
+                        <s.icon className="text-slate-400 group-hover:text-blue-600 transition-colors" size={26} strokeWidth={2.5} />
+                      </div>
                       <div className="flex-1">
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{s.label}</p>
                         <h3 className="text-2xl font-black text-slate-900 mt-0.5 tracking-tight">{s.value}</h3>
+                        <p className="text-[10px] text-slate-300 font-bold mt-0.5">{s.trend}</p>
                       </div>
                       <ArrowUpRight size={20} className="text-slate-200 group-hover:text-blue-500" />
                     </motion.div>
@@ -302,7 +309,83 @@ export default function DashboardWarga() {
               </motion.div>
             )}
 
-            {/* KONDISI TAB 2: INTERACTIVE READ-ONLY KAS DESA */}
+            {/* KONDISI TAB 2: RIWAYAT LAPORAN WARGA */}
+            {activeTab === "Laporan" && (
+              <motion.div key="laporan" initial="hidden" animate="visible" exit="hidden" variants={FADE_UP} className="space-y-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Laporan Saya</h3>
+                    <p className="text-xs font-bold text-slate-400 uppercase mt-1">Pantau progres pengaduan yang telah kamu kirimkan</p>
+                  </div>
+                  <button
+                    onClick={() => navigate("/lapor")}
+                    className="px-5 py-2.5 bg-blue-600 text-white text-xs font-black rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition flex items-center gap-2"
+                  >
+                    <Zap size={14} /> Buat Laporan Baru
+                  </button>
+                </div>
+
+                {laporanList.length === 0 ? (
+                  <div className="p-16 text-center bg-white rounded-[2.5rem] border border-slate-100">
+                    <MessageSquare size={36} className="mx-auto text-slate-200 mb-4" />
+                    <p className="text-sm font-bold text-slate-400">Belum ada laporan yang dikirimkan.</p>
+                    <button onClick={() => navigate("/lapor")} className="mt-4 px-5 py-2.5 bg-blue-600 text-white text-xs font-black rounded-xl hover:bg-blue-700 transition">
+                      Buat Laporan Pertama
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    {laporanList.map((laporan) => (
+                      <motion.div
+                        key={laporan.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-7 grid md:grid-cols-[1fr_220px] gap-8 items-start"
+                      >
+                        {/* Detail laporan */}
+                        <div>
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                              LPR-00{laporan.id}
+                            </span>
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded border ${
+                              laporan.status === "SELESAI" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                              laporan.status === "PROSES" ? "bg-violet-50 text-violet-600 border-violet-100" :
+                              laporan.status === "DITUGASKAN" ? "bg-blue-50 text-blue-600 border-blue-100" :
+                              "bg-amber-50 text-amber-600 border-amber-100"
+                            }`}>
+                              {laporan.status}
+                            </span>
+                          </div>
+                          <h4 className="font-black text-slate-900 text-base tracking-tight">{laporan.title}</h4>
+                          <p className="text-xs text-slate-500 font-medium mt-2 leading-relaxed line-clamp-2">{laporan.description}</p>
+                          <p className="text-[10px] text-slate-400 font-bold mt-3 uppercase tracking-wide">
+                            📍 {laporan.location} &nbsp;·&nbsp; {new Date(laporan.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                          </p>
+                          {laporan.petugas && (
+                            <p className="text-[10px] text-blue-600 font-bold mt-1.5">👤 Admin Penangan: {laporan.petugas.nama_lengkap}</p>
+                          )}
+                          {laporan.catatan_petugas && (
+                            <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Catatan Admin</p>
+                              <p className="text-xs text-slate-600 font-medium leading-relaxed">{laporan.catatan_petugas}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Timeline */}
+                        <div className="bg-slate-50/60 rounded-2xl p-5 border border-slate-100">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mb-5">Progres</p>
+                          <StatusTimeline status={laporan.status} />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* KONDISI TAB 3: INTERACTIVE READ-ONLY KAS DESA */}
             {activeTab === "Transparansi" && (
               <motion.div key="transparansi" initial="hidden" animate="visible" exit="hidden" variants={FADE_UP} className="space-y-8">
                 <div>
