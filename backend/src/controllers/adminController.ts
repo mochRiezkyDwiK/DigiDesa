@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../lib/data-source";
 import { Report } from "../models/Report";
 import { User } from "../models/User";
+import pool from "../../database";
 
 // Lazy getters agar repository tidak dipanggil sebelum DB initialized
 const getReportRepo = () => AppDataSource.getRepository(Report);
@@ -9,16 +10,18 @@ const getUserRepo = () => AppDataSource.getRepository(User);
 
 // Ambil semua laporan untuk dashboard admin
 export const getAllReports = async (req: Request, res: Response) => {
-    try {
-        const reports = await getReportRepo().find({
-            relations: ["user", "petugas"], 
-            order: { created_at: "DESC" }
-        });
-        res.json({ success: true, data: reports });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Gagal ambil laporan" });
-    }
+  try {
+    const [rows] = await pool.execute(`
+      SELECT id, no_tiket, judul, kategori, deskripsi, lokasi,
+             bukti_visual, status, created_at
+      FROM pengaduan
+      ORDER BY created_at DESC
+    `);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error("[AdminController] getAllReports error:", error);
+    res.status(500).json({ success: false, message: "Gagal mengambil data laporan" });
+  }
 };
 
 // Update status laporan (legacy, bisa diganti updateProgresLaporan)
