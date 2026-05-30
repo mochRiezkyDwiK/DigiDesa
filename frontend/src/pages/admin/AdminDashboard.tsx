@@ -16,6 +16,7 @@ import {
   Settings,
   ShieldCheck,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { EASE_SPRING } from "../../constants/animation";
 
@@ -122,6 +123,12 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState("Overview");
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   const menuItems = [
     { name: "Overview", icon: LayoutDashboard, path: "/admin" },
     { name: "Validasi Surat", icon: Files, path: "/admin/validasi" },
@@ -199,6 +206,14 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="w-full mt-3 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+          >
+            <LogOut size={18} />
+            Keluar Sistem
+          </button>
         </div>
       </aside>
 

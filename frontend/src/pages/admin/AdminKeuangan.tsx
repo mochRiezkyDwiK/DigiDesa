@@ -25,6 +25,7 @@ import {
   Image as ImageIcon,
   User,
   CheckCircle2,
+  LogOut,
 } from "lucide-react";
 
 export default function AdminKeuangan() {
@@ -53,6 +54,12 @@ export default function AdminKeuangan() {
     evidence: null,
     transaction_date: new Date().toISOString().split("T")[0],
   });
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   const fetchFinanceData = async () => {
     try {
@@ -258,6 +265,16 @@ export default function AdminKeuangan() {
             );
           })}
         </nav>
+
+        <div className="p-5 border-t border-slate-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+          >
+            <LogOut size={18} />
+            Keluar Sistem
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-h-screen min-w-0">

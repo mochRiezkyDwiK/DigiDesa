@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -24,6 +24,7 @@ import {
   Eye,
   FileText,
   SlidersHorizontal,
+  LogOut,
 } from "lucide-react";
 
 export default function AdminPenduduk() {
@@ -58,6 +59,12 @@ export default function AdminPenduduk() {
     status_tinggal: "TETAP",
   });
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   const fetchPenduduk = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -78,6 +85,38 @@ export default function AdminPenduduk() {
   useEffect(() => {
     fetchPenduduk();
   }, []);
+
+  const rtOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        penduduk
+          .map((p) => String(p.rt ?? "").trim())
+          .filter((rt) => rt.length > 0)
+      )
+    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  }, [penduduk]);
+
+  const rwOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        penduduk
+          .map((p) => String(p.rw ?? "").trim())
+          .filter((rw) => rw.length > 0)
+      )
+    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  }, [penduduk]);
+
+  useEffect(() => {
+    if (rtFilter && !rtOptions.includes(rtFilter)) {
+      setRtFilter("");
+    }
+  }, [rtFilter, rtOptions]);
+
+  useEffect(() => {
+    if (rwFilter && !rwOptions.includes(rwFilter)) {
+      setRwFilter("");
+    }
+  }, [rwFilter, rwOptions]);
 
   const handleTambahWarga = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,8 +269,11 @@ export default function AdminPenduduk() {
       p.nama_lengkap?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.nik?.includes(searchQuery);
 
-    const matchRt = !rtFilter || p.rt === rtFilter;
-    const matchRw = !rwFilter || p.rw === rwFilter;
+    const currentRt = String(p.rt ?? "").trim();
+    const currentRw = String(p.rw ?? "").trim();
+
+    const matchRt = !rtFilter || currentRt === rtFilter;
+    const matchRw = !rwFilter || currentRw === rwFilter;
 
     let matchCard = true;
 
@@ -317,6 +359,16 @@ export default function AdminPenduduk() {
             );
           })}
         </nav>
+
+        <div className="p-5 border-t border-slate-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+          >
+            <LogOut size={18} />
+            Keluar Sistem
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-h-screen relative">
@@ -449,9 +501,11 @@ export default function AdminPenduduk() {
                   className="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer"
                 >
                   <option value="">Semua RT</option>
-                  <option value="01">RT 01</option>
-                  <option value="02">RT 02</option>
-                  <option value="03">RT 03</option>
+                  {rtOptions.map((rt) => (
+                    <option key={rt} value={rt}>
+                      RT {rt}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -463,8 +517,11 @@ export default function AdminPenduduk() {
                   className="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer"
                 >
                   <option value="">Semua RW</option>
-                  <option value="10">RW 10</option>
-                  <option value="11">RW 11</option>
+                  {rwOptions.map((rw) => (
+                    <option key={rw} value={rw}>
+                      RW {rw}
+                    </option>
+                  ))}
                 </select>
               </div>
 
