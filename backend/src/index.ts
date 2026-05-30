@@ -9,7 +9,8 @@ import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import suratRoutes from "./routes/suratRoutes"; // ── BARU: Rute khusus untuk pengajuan surat ──
 import userRoutes from "./routes/userRoutes";
-import pengumumanRoutes from "./routes/pengumumanRoutes";
+import pengumumanRoutes from "./routes/PengumumanRoutes";
+import anggaranRoutes from "./routes/TransparansiRoutes";
 
 if (!process.env.DATABASE_URL) {
     console.error("❌ DATABASE_URL tidak ditemukan di .env");
@@ -33,7 +34,8 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/surat", suratRoutes); // ── BARU: Rute khusus untuk pengajuan surat ──
 app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/pengumuman", pengumumanRoutes); // ── BARU: Rute khusus untuk pengumuman ──
+app.use("/api/v1/pengumuman", pengumumanRoutes);
+app.use("/api/v1/anggaran", anggaranRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/", (_req, res) => {
