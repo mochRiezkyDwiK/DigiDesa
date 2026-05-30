@@ -3,11 +3,15 @@ import { AppDataSource } from "../lib/data-source";
 import { Report } from "../models/Report";
 import { User } from "../models/User";
 
-const reportRepository = AppDataSource.getRepository(Report);   
+// Lazy getters agar repository tidak dipanggil sebelum DB initialized
+const getReportRepo = () => AppDataSource.getRepository(Report);
+const getUserRepo = () => AppDataSource.getRepository(User);
+
+// Ambil semua laporan untuk dashboard admin
 export const getAllReports = async (req: Request, res: Response) => {
     try {
-        const reports = await reportRepository.find({
-            relations: ["user"],
+        const reports = await getReportRepo().find({
+            relations: ["user", "petugas"], 
             order: { created_at: "DESC" }
         });
         res.json({ success: true, data: reports });
@@ -17,13 +21,13 @@ export const getAllReports = async (req: Request, res: Response) => {
     }
 };
 
-// Update status laporan (Contoh: dari BARU ke PROSES)
+// Update status laporan (legacy, bisa diganti updateProgresLaporan)
 export const updateReportStatus = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         if (!id) return res.status(400).json({ success: false, message: "ID parameter is required" });
         const { status } = req.body as { status: string };
-        await reportRepository.update(id as any, { status });
+        await getReportRepo().update(id as any, { status });
         res.json({ success: true, message: "Status laporan diperbarui" });
     } catch (error) {
         console.error(error);
@@ -31,29 +35,49 @@ export const updateReportStatus = async (req: Request, res: Response) => {
     }
 };
 
-// --- FUNGSI VERIFY WARGA (Admin) ---
+// ─── FUNGSI AUDIT VERIFIKASI AKUN WARGA OLEH ADMIN ───
 export const verifyWarga = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params; // Mengambil ID dari URL
-        const userRepository = AppDataSource.getRepository(User);
+        const id = Number(req.params.id);
+        const { status_akun, alasan_ditolak } = req.body;
 
-        // Cari user berdasarkan ID
-        const user = await userRepository.findOneBy({ id: Number(id) });
-
-        if (!user) {
-            return res.status(404).json({ success: false, message: "Warga tidak ditemukan" });
+        if (!Number.isFinite(id)) {
+            return res.status(400).json({ success: false, message: "ID warga tidak valid" });
         }
 
-        // Update status verifikasi
-        user.is_verified = true;
-        await userRepository.save(user);
+        const user = await getUserRepo().findOneBy({ id });
 
-        res.json({ 
-            success: true, 
-            message: `Warga dengan NIK ${user.nik} berhasil diverifikasi!` 
+        if (!user) {
+            return res.status(404).json({ success: false, message: "Data warga tidak ditemukan!" });
+        }
+
+        user.status_akun = status_akun;
+        user.alasan_ditolak = alasan_ditolak;
+
+        await getUserRepo().save(user);
+
+        return res.json({
+            success: true,
+            message: `Akun warga berhasil di-update menjadi ${status_akun}!`,
+            data: user
         });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Gagal memverifikasi warga" });
+    } catch (error: any) {
+        console.error("ERROR VERIFY WARGA:", error);
+        return res.status(500).json({ success: false, message: error.message || "Gagal memproses audit" });
+    }
+};
+
+// Ambil semua user selain role WARGA untuk ditugaskan sebagai petugas
+export const getAllPetugas = async (req: Request, res: Response) => {
+    try {
+        const users = await getUserRepo().find({
+            select: ["id", "nama_lengkap", "role", "username"]
+        });
+        
+        const petugas = users.filter(u => u.role !== "WARGA");
+        return res.json({ success: true, data: petugas });
+    } catch (error: any) {
+        console.error("Error pada getAllPetugas:", error);
+        return res.status(500).json({ success: false, message: "Gagal mengambil daftar petugas." });
     }
 };
