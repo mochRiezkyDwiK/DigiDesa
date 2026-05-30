@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
-import { registerWarga, login, getProfile, submitOnboarding } from "../controllers/authController";
+import { register, login, getProfile, submitOnboarding } from "../controllers/authController";
 import { authenticateToken } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -16,7 +16,7 @@ const storageKtp = multer.diskStorage({
 const uploadKtp = multer({ storage: storageKtp });
 
 // Jalur Auth Umum
-router.post("/register", registerWarga);
+router.post("/register", register);
 router.post("/login", login);
 
 // Jalur Profile Warga
