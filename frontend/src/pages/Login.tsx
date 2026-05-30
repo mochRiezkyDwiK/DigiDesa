@@ -111,7 +111,7 @@ export default function Login() {
         if (response.data.success) {
         
           const user = response.data.user;
-          const userStatus = response.data.user.status.toUpperCase();
+          const userStatus = (response.data.user.status_akun || "").toUpperCase();
 
           console.log("data user:", user);
           console.log("status:", user.status);
@@ -122,7 +122,7 @@ export default function Login() {
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("user", JSON.stringify(response.data.user));
           localStorage.setItem("role", response.data.user.role || "");
-          localStorage.setItem("status", response.data.user.status || "");
+          localStorage.setItem("status", response.data.user.status_akun || "");
 
           alert("Login Berhasil!");
           if (response.data.user.role === "ADMIN") {
