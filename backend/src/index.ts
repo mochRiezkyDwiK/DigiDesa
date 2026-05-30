@@ -32,10 +32,10 @@ app.use(express.json());
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/surat", suratRoutes); // ── BARU: Rute khusus untuk pengajuan surat ──
+app.use("/api/v1/surat", suratRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/pengumuman", pengumumanRoutes);
-app.use("/api/v1/anggaran", anggaranRoutes);
+app.use("/api/v1", anggaranRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/", (_req, res) => {

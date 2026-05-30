@@ -15,7 +15,7 @@ const services: ServiceItem[] = [
     icon: <FileText className="w-6 h-6" />,
     label: "Pembuatan Surat",
     description: "Ajukan SKU, SKTM, SK Domisili & lainnya secara online tanpa antre.",
-    href: "/create-surat",
+    href: "/buat-surat",
   },
   {
     id: "pengaduan",
