@@ -52,7 +52,7 @@ const infoItems = [
   },
   {
     title: "Validasi & Tindak Lanjut",
-    detail: "Laporan diverifikasi admin desa < 3x24 jam",
+    detail: "Laporan diverifikasi petugas desa < 3x24 jam",
     Icon: CheckCircle2,
     accentClass: "border-l-lime-500",
     iconColor: "text-[#84cc16]",
@@ -210,7 +210,7 @@ export default function LaporPage() {
           </div>
           <div className="flex items-center gap-2.5 rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-2 text-xs text-[#0b429c] font-semibold">
             <Info size={15} className="text-[#0b429c] flex-shrink-0" />
-            <span>Respon awal admin maksimal 3 hari kerja</span>
+            <span>Respon awal petugas maksimal 3 hari kerja</span>
           </div>
         </div>
       </header>
@@ -487,7 +487,7 @@ export default function LaporPage() {
                   <span className="text-[#0b429c] font-black">
                     {ticketNumber}
                   </span>
-                  . Admin desa akan segera memverifikasi laporan Anda dalam
+                  . Petugas desa akan segera memverifikasi laporan Anda dalam
                   jam kerja operasional.
                 </p>
               </div>
