@@ -227,7 +227,7 @@ export default function DashboardWarga() {
                     : "Menunggu Verifikasi Wilayah ⚠"}
                 </span>
                 <h2 className="text-4xl font-black text-slate-900 mt-6 tracking-tighter leading-none">
-                  Halo, {user?.nama.split(" ")[0]}! <br /> Layanan Publik{" "}
+                  Halo, {user?.nama_lengkap.split(" ")[0]}! <br /> Layanan Publik{" "}
                   <span className="text-blue-600">Serba Instan.</span>
                 </h2>
                 <p className="text-slate-500 text-sm max-w-sm mt-4 leading-relaxed font-medium">
