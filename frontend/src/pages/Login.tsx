@@ -21,7 +21,7 @@ import {
 // Mengimpor komponen dari folder komponen
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import StatsWidget from "../components/StatsWidgets";
+// import StatsWidget from "../components/StatsWidgets";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -188,7 +188,7 @@ export default function Login() {
             variants={fadeUp}
             className="w-full max-w-xl mx-auto lg:mx-0"
           >
-            <StatsWidget />
+            {/* <StatsWidget /> */}
           </motion.div>
 
           <motion.div
