@@ -21,7 +21,7 @@ import {
 // Mengimpor komponen dari folder komponen
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-// import StatsWidget from "../components/StatsWidgets";
+import StatsWidget from "../components/StatsWidgets";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -114,7 +114,7 @@ export default function Login() {
           const userStatus = (response.data.user.status_akun || "").toUpperCase();
 
           console.log("data user:", user);
-          console.log("status:", user.status);
+          console.log("status:", user.status_akun);
           console.log("role:", user.role);
 
 
@@ -188,7 +188,7 @@ export default function Login() {
             variants={fadeUp}
             className="w-full max-w-xl mx-auto lg:mx-0"
           >
-            {/* <StatsWidget /> */}
+            <StatsWidget />
           </motion.div>
 
           <motion.div
@@ -226,7 +226,7 @@ export default function Login() {
                 <UserPlus size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">UserPlus</span>
               </button>
-              {/* <button
+              <button
                 type="button"
                 onClick={() =>
                   alert("Login sidik jari terintegrasi perangkat keras.")
@@ -235,7 +235,7 @@ export default function Login() {
               >
                 <Fingerprint size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">Fingerprint</span>
-              </button> */}
+              </button>
             </div>
 
             <form onSubmit={handleAuthSubmit} className="flex flex-col gap-5">
