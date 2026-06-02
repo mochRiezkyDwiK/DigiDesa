@@ -35,6 +35,7 @@ const FADE_UP = {
 interface UserProfile {
   nama_lengkap: string;
   nik: string;
+  rt: string | null;
   rw: string | null;
   is_verified: boolean;
 }
