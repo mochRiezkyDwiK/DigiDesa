@@ -226,7 +226,7 @@ export default function Login() {
                 <UserPlus size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">UserPlus</span>
               </button>
-              <button
+              {/* <button
                 type="button"
                 onClick={() =>
                   alert("Login sidik jari terintegrasi perangkat keras.")
@@ -235,7 +235,7 @@ export default function Login() {
               >
                 <Fingerprint size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">Fingerprint</span>
-              </button>
+              </button> */}
             </div>
 
             <form onSubmit={handleAuthSubmit} className="flex flex-col gap-5">
