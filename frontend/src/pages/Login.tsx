@@ -109,14 +109,14 @@ export default function Login() {
         );
 
         if (response.data.success) {
-        
           const user = response.data.user;
-          const userStatus = (response.data.user.status_akun || "").toUpperCase();
+          const userStatus = (
+            response.data.user.status_akun || ""
+          ).toUpperCase();
 
           console.log("data user:", user);
           console.log("status:", user.status_akun);
           console.log("role:", user.role);
-
 
           localStorage.clear();
           localStorage.setItem("token", response.data.token);
@@ -127,6 +127,8 @@ export default function Login() {
           alert("Login Berhasil!");
           if (response.data.user.role === "ADMIN") {
             navigate("/admin");
+          } else if (userStatus === "INCOMPLETE") {
+            navigate("/onboarding");
           } else if (userStatus === "PENDING") {
             navigate("/onboarding");
           } else {
