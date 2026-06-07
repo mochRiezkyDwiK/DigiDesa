@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+// ✅ PERBAIKAN: Impor AnimatePresence untuk animasi modal pack-out/pack-in
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { EASE_SPRING } from "../../constants/animation";
 import axios from "axios";
@@ -11,6 +12,9 @@ import {
   User,
   MapPin,
   Fingerprint,
+  // ✅ PERBAIKAN: Tambah ikon pendukung modal login
+  AlertTriangle,
+  LogIn,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -35,6 +39,8 @@ export default function Surat() {
 
   // ── BARU: State khusus untuk mencatat data asli bawaan dari database ──
   const [dbUser, setDbUser] = useState<any>(null);
+  // ✅ PERBAIKAN: State untuk mengontrol pop-up modal login
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [formData, setFormData] = useState({
     jenisSurat: location.state?.jenisSurat || "",
@@ -53,14 +59,14 @@ export default function Surat() {
     noHp: "",
   });
   const [apiResponse, setApiResponse] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   // ── SINKRONISASI ASLI DARI DATABASE MYSQL ──
   useEffect(() => {
     const fetchLiveProfile = async () => {
+      // ✅ PERBAIKAN: Jika tidak ada token, batalkan loading dan pemicu modal muncul
       if (!token) {
-        alert("Sesi login tidak ditemukan. Silakan login kembali!");
-        navigate("/login");
+        setShowLoginModal(true);
+        setPageLoading(false);
         return;
       }
 
@@ -74,11 +80,11 @@ export default function Surat() {
 
         if (response.data.success) {
           const user = response.data.data;
-          setDbUser(user); // Amankan data asli server ke state pembanding Ky
+          setDbUser(user);
 
           setFormData((prev) => ({
             ...prev,
-            namaLengkap: user.nama_lengkap || "",
+            namaLengkap: user.nama || user.nama_lengkap || "",
             nik: user.nik || "",
             tempatLahir: user.tempat_lahir || "",
             tanggalLahir: user.tanggal_lahir
@@ -96,7 +102,14 @@ export default function Surat() {
         }
       } catch (error: any) {
         console.error("GAGAL AMBIL PROFILE LIVE DARI DB:", error);
-        alert("Gagal sinkronisasi profil resmi warga.");
+        
+        // ✅ PERBAIKAN: Jika token kedaluwarsa / tidak valid dari server (401)
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          setShowLoginModal(true);
+        } else {
+          alert("Gagal sinkronisasi profil resmi warga.");
+        }
       } finally {
         setPageLoading(false);
       }
@@ -115,6 +128,13 @@ export default function Surat() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // ✅ PERBAIKAN: Validasi double-check sebelum hit endpoint submit
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -147,7 +167,12 @@ export default function Surat() {
       }
     } catch (error: any) {
       console.error("ERROR SUBMIT SURAT FE:", error);
-      alert(error.response?.data?.message || "Gagal mengirim permohonan");
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        setShowLoginModal(true);
+      } else {
+        alert(error.response?.data?.message || "Gagal mengirim permohonan");
+      }
     } finally {
       setLoading(false);
     }
@@ -162,8 +187,8 @@ export default function Surat() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans antialiased pb-20 flex flex-col">
-      <Navbar/>
+    <div className="min-h-screen bg-gray-50 font-sans antialiased pb-20 flex flex-col relative">
+      <Navbar />
       <header className="h-20 bg-white border-b border-gray-200 sticky top-0 z-50 px-6 shadow-sm">
         <div className="max-w-7xl mx-auto h-full flex items-center">
           <div className="flex gap-4">
@@ -186,7 +211,7 @@ export default function Surat() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 pt-12">
+      <main className="max-w-7xl mx-auto px-6 pt-12 flex-1 w-full">
         {step === 1 ? (
           <form
             onSubmit={handleSubmit}
@@ -261,7 +286,6 @@ export default function Surat() {
                       <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">
                         NIK KTP Warga
                       </label>
-                      {/* ── BARU: Hanya lock jika NIK beneran ada isinya di DB MySQL ── */}
                       <input
                         type="text"
                         name="nik"
@@ -288,11 +312,11 @@ export default function Surat() {
                       name="namaLengkap"
                       value={formData.namaLengkap}
                       onChange={handleChange}
-                      disabled={!!dbUser?.nama_lengkap}
+                      disabled={!!dbUser?.nama || !!dbUser?.nama_lengkap}
                       required
                       placeholder="Ketik Nama Lengkap Anda..."
                       className={`w-full border rounded-2xl py-4 px-5 text-sm font-bold outline-none transition-all ${
-                        dbUser?.nama_lengkap
+                        dbUser?.nama || dbUser?.nama_lengkap
                           ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                           : "bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-500 focus:bg-white"
                       }`}
@@ -310,7 +334,7 @@ export default function Surat() {
                     <div className="space-y-2">
                       <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">
                         Jenis Kelamin
-                      </label>
+                      </label>  
                       <select
                         name="jenisKelamin"
                         value={formData.jenisKelamin}
@@ -469,6 +493,62 @@ export default function Surat() {
           </motion.div>
         )}
       </main>
+
+      {/* ✅ PERBAIKAN: MODAL DIALOG POP-UP WAJIB LOGIN DENGAN FRAMER-MOTION */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <div className="fixed inset-0 w-screen h-screen z-[999] flex items-center justify-center px-4">
+            {/* Backdrop Blur */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+              onClick={() => navigate("/login")} // Klik luar langsung arahkan ke login demi sekuritas
+            />
+
+            {/* Kotak Modal */}
+            <motion.div
+              initial={{ scale: 0.93, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.93, opacity: 0, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl border border-slate-100 z-10"
+            >
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-orange-500 border border-orange-100 mb-5">
+                <AlertTriangle size={26} />
+              </div>
+
+              <h3 className="text-lg font-black text-slate-950 tracking-tight">
+                Akses Terbatas: Anda Harus Login
+              </h3>
+              <p className="mt-3 text-xs leading-6 text-slate-500 font-medium">
+                Sistem internal DigiDesa mendeteksi Anda belum masuk log. Silakan verifikasi identitas akun warga Anda terlebih dahulu untuk mengakses layanan administrasi surat ini.
+              </p>
+
+              <div className="mt-7 flex flex-col gap-2.5">
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/login")}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 hover:bg-blue-700 px-5 py-4 text-xs font-black uppercase tracking-widest text-white shadow-md shadow-blue-500/10 transition-colors"
+                >
+                  <LogIn size={15} />
+                  Masuk Akun Warga
+                </motion.button>
+
+                <button
+                  onClick={() => navigate("/")}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <Footer />
     </div>
   );
 }

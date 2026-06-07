@@ -77,7 +77,7 @@ export default function Login() {
     setShowPassword(false);
   };
 
-  const handleAuthSubmit = async (e) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setIsLoading(true);
@@ -129,7 +129,7 @@ export default function Login() {
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("ERROR PADA MESIN AUTH SYSTEM FE:", error);
       alert(error.response?.data?.message || "Gagal memproses permohonan.");
     } finally {
@@ -183,7 +183,7 @@ export default function Login() {
             variants={fadeUp}
             className="w-full max-w-xl mx-auto lg:mx-0"
           >
-            <StatsWidget />
+            {/* <StatsWidget />  */}
           </motion.div>
 
           <motion.div
@@ -221,7 +221,7 @@ export default function Login() {
                 <UserPlus size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">UserPlus</span>
               </button>
-              <button
+              {/* <button
                 type="button"
                 onClick={() =>
                   alert("Login sidik jari terintegrasi perangkat keras.")
@@ -230,7 +230,7 @@ export default function Login() {
               >
                 <Fingerprint size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">Fingerprint</span>
-              </button>
+              </button> */}
             </div>
 
             <form onSubmit={handleAuthSubmit} className="flex flex-col gap-5">

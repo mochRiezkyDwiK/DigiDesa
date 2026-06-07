@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { EASE_SPRING, STAGGER_CONTAINER, FADE_UP } from "../../constants/animation";
+import { useNavigate } from "react-router-dom";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -36,15 +37,27 @@ interface LaporanKeuangan {
 }
 
 export default function TransparansiAnggaran() {
+  const navigate = useNavigate();
   const [anggaranData, setAnggaranData] = useState<Anggaran[]>([]);
   const [laporanKeuangan, setLaporanKeuangan] = useState<LaporanKeuangan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Anda harus login terlebih dahulu untuk mengakses halaman ini.");
+      navigate("/login");
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
-        const resAnggaran = await fetch("http://localhost:5000/api/v1/anggaran");
+        const resAnggaran = await fetch("http://localhost:5000/api/v1/anggaran", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const dataAnggaran = await resAnggaran.json();
         const resLaporan = await fetch("http://localhost:5000/api/v1/laporan");
         const dataLaporan = await resLaporan.json();
@@ -59,7 +72,7 @@ export default function TransparansiAnggaran() {
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
   // Fungsi Utility untuk memformat angka murni menjadi Format Rupiah
   const formatRupiah = (angka: number) => {
