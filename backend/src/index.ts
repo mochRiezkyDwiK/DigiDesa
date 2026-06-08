@@ -9,6 +9,7 @@ import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import suratRoutes from "./routes/suratRoutes"; // ── BARU: Rute khusus untuk pengajuan surat ──
 import userRoutes from "./routes/userRoutes";
+import statsRoutes from "./routes/stats";
 import pengumumanRoutes from "./routes/PengumumanRoutes";
 import anggaranRoutes from "./routes/TransparansiRoutes";
 
@@ -34,6 +35,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/surat", suratRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/stats", statsRoutes);
 app.use("/api/v1/pengumuman", pengumumanRoutes);
 app.use("/api/v1", anggaranRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
