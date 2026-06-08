@@ -46,6 +46,41 @@ const getStatusLabel = (status: string) => {
   return status || "Tidak diketahui";
 };
 
+const formatDateTime = (value?: string) => {
+  if (!value) return "-";
+
+  return new Date(value).toLocaleString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const normalizeKeperluan = (text?: string) => {
+  if (!text) return "Tidak ada keterangan keperluan.";
+
+  const marker = "[ALASAN PENGAJUAN SURAT]";
+  if (text.includes(marker)) {
+    return text.split(marker)[1]?.trim() || "Tidak ada keterangan keperluan.";
+  }
+
+  return text
+    .replace(/\[DATA DOMISILI OTOMATIS DARI DATABASE\]/gi, "")
+    .replace(/Nama:.*$/gim, "")
+    .replace(/NIK:.*$/gim, "")
+    .replace(/Alamat:.*$/gim, "")
+    .replace(/RT\/RW:.*$/gim, "")
+    .trim() || "Tidak ada keterangan keperluan.";
+};
+
+const getStatusBadgeClass = (status: string) => {
+  if (status === "SELESAI") return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (status === "REJECTED") return "bg-red-50 text-red-700 border-red-200";
+  return "bg-amber-50 text-amber-700 border-amber-200";
+};
+
 export default function AdminValidasiSurat() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("Semua");
@@ -150,6 +185,81 @@ export default function AdminValidasiSurat() {
     { n: "Keuangan Desa", i: BarChart3, p: "/admin/keuangan" },
     { n: "Pengaturan", i: Settings, p: "/admin/pengaturan" },
   ];
+
+const handleDownloadSurat = (surat: any) => {
+  if (!surat || surat.status !== "SELESAI") {
+    alert("Surat belum selesai, belum bisa diunduh.");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank");
+
+  if (!printWindow) {
+    alert("Pop-up diblokir browser. Izinkan pop-up untuk mengunduh surat.");
+    return;
+  }
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>${surat.no_surat || "Surat Resmi"}</title>
+        <style>
+          body { font-family: "Times New Roman", serif; padding: 40px; }
+          .kop { text-align: center; border-bottom: 3px double #000; padding-bottom: 12px; }
+          .judul { text-align: center; margin-top: 30px; font-weight: bold; text-decoration: underline; }
+          .nomor { text-align: center; margin-bottom: 30px; }
+          .isi { margin-top: 24px; line-height: 1.7; font-size: 16px; }
+          .row { display: flex; margin: 6px 0; }
+          .label { width: 160px; }
+          .ttd { margin-top: 70px; display: flex; justify-content: flex-end; }
+          .ttd-box { width: 240px; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="kop">
+          <h3>PEMERINTAH DESA DIGITAL</h3>
+          <h4>KECAMATAN MAJU BERSAMA</h4>
+          <p>Jl. Desa Digital No. 01</p>
+        </div>
+
+        <div class="judul">${getJenisSuratLabel(surat.jenis_surat).toUpperCase()}</div>
+        <div class="nomor">Nomor: ${surat.no_surat || "-"}</div>
+
+        <div class="isi">
+          <p>Yang bertanda tangan di bawah ini menerangkan bahwa:</p>
+
+          <div class="row"><div class="label">Nama</div><div>: ${surat.user?.nama_lengkap || "-"}</div></div>
+          <div class="row"><div class="label">NIK</div><div>: ${surat.user?.nik || "-"}</div></div>
+          <div class="row"><div class="label">Alamat</div><div>: ${surat.user?.alamat || "-"}</div></div>
+          <div class="row"><div class="label">RT/RW</div><div>: ${surat.user?.rt || "-"} / ${surat.user?.rw || "-"}</div></div>
+
+          <p>
+            Adalah benar warga yang berdomisili di wilayah tersebut dan surat ini dibuat
+            untuk keperluan: <b>${normalizeKeperluan(surat.keperluan)}</b>.
+          </p>
+          <p>Demikian surat keterangan ini dibuat untuk digunakan sebagaimana mestinya.</p>
+        </div>
+
+        <div class="ttd">
+          <div class="ttd-box">
+            <p>Desa Digital, ${new Date().toLocaleDateString("id-ID")}</p>
+            <p>Kepala Desa</p>
+            <br/><br/><br/>
+            <p><b><u>H. Ahmad Subarjo</u></b></p>
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+};
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased flex">
@@ -497,7 +607,10 @@ export default function AdminValidasiSurat() {
                               </button>
 
                               {surat.status === "SELESAI" && (
-                                <button className="w-8 h-8 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center">
+                                <button
+                                  onClick={() => handleDownloadSurat(surat)}
+                                  className="w-8 h-8 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center"
+                                >
                                   <Download size={14} />
                                 </button>
                               )}
@@ -544,12 +657,15 @@ export default function AdminValidasiSurat() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 26, stiffness: 220 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col font-sans text-slate-800"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-slate-100 shadow-2xl z-50 flex flex-col font-sans text-slate-800"
             >
-              <div className="px-6 py-5 border-b border-slate-200 flex items-start justify-between gap-4">
+              <div className="px-6 py-5 border-b border-slate-200 bg-white flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold text-slate-950 tracking-tight">
-                    Detail Dokumen
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                    Preview Surat Resmi
+                  </p>
+                  <h3 className="text-xl font-bold text-slate-950 tracking-tight mt-1">
+                    Detail Permohonan Surat
                   </h3>
                   <p className="text-sm text-slate-500 mt-1">
                     ID Referensi: #{selectedSurat.id}
@@ -558,119 +674,191 @@ export default function AdminValidasiSurat() {
 
                 <button
                   onClick={() => setSelectedSurat(null)}
-                  className="w-9 h-9 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-colors shrink-0"
+                  className="w-10 h-10 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-colors shrink-0"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                  <p className="text-xs font-semibold text-slate-500">
-                    Biodata Pemohon
-                  </p>
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 text-slate-950">
+                  <div className="flex items-center gap-4 border-b-4 border-slate-900 pb-4">
+                    <div className="w-16 h-16 rounded-full border-2 border-blue-700 bg-blue-50 flex items-center justify-center shrink-0">
+                      <Building2 className="w-8 h-8 text-blue-700" />
+                    </div>
 
-                  <p className="text-base font-bold text-slate-950 mt-2">
-                    {selectedSurat.user?.nama_lengkap || "Warga Tanpa Nama"}
-                  </p>
-
-                  <div className="mt-3 space-y-1 text-sm text-slate-600">
-                    <p>NIK: {selectedSurat.user?.nik || "-"}</p>
-                    <p>
-                      RT {selectedSurat.user?.rt || "00"} / RW {selectedSurat.user?.rw || "00"}
-                    </p>
+                    <div className="flex-1 text-center">
+                      <p className="text-base font-extrabold uppercase tracking-wide">
+                        Pemerintah Kabupaten Desa Digital
+                      </p>
+                      <p className="text-sm font-bold uppercase mt-1">
+                        Kecamatan Maju Bersama
+                      </p>
+                      <p className="text-sm font-bold uppercase mt-1">
+                        Desa Makmur Sentosa
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-2">
+                        Jl. Desa Makmur No. 01, Kec. Maju Bersama, Kab. Desa Digital 12345
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 mb-2">
-                    Jenis surat
-                  </p>
-                  <div className="p-4 bg-white border border-slate-200 rounded-2xl">
-                    <p className="text-sm font-bold text-slate-950">
+                  <div className="mt-6 text-center">
+                    <h2 className="text-lg font-extrabold underline underline-offset-4 uppercase">
                       {getJenisSuratLabel(selectedSurat.jenis_surat)}
+                    </h2>
+                    <p className="text-xs font-semibold text-slate-500 mt-2">
+                      Nomor: {selectedSurat.no_surat || "Belum diterbitkan"}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Diajukan pada{" "}
-                      {new Date(selectedSurat.tgl_diajukan).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
+                  </div>
+
+                  <div className="mt-7 space-y-6 text-sm">
+                    <section>
+                      <h4 className="font-extrabold uppercase text-slate-900 mb-3">
+                        A. Data Pemohon
+                      </h4>
+                      <div className="grid grid-cols-[140px_12px_1fr] gap-y-2 text-slate-700">
+                        <span>Nama Lengkap</span>
+                        <span>:</span>
+                        <span className="font-semibold text-slate-950">
+                          {selectedSurat.user?.nama_lengkap || "Warga Tanpa Nama"}
+                        </span>
+
+                        <span>NIK</span>
+                        <span>:</span>
+                        <span>{selectedSurat.user?.nik || "-"}</span>
+
+                        <span>Alamat</span>
+                        <span>:</span>
+                        <span>{selectedSurat.user?.alamat || "-"}</span>
+
+                        <span>RT / RW</span>
+                        <span>:</span>
+                        <span>
+                          {selectedSurat.user?.rt || "00"} / {selectedSurat.user?.rw || "00"}
+                        </span>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4 className="font-extrabold uppercase text-slate-900 mb-3">
+                        B. Informasi Surat
+                      </h4>
+                      <div className="grid grid-cols-[140px_12px_1fr] gap-y-2 text-slate-700">
+                        <span>Jenis Surat</span>
+                        <span>:</span>
+                        <span className="font-semibold text-slate-950">
+                          {getJenisSuratLabel(selectedSurat.jenis_surat)}
+                        </span>
+
+                        <span>Tanggal Pengajuan</span>
+                        <span>:</span>
+                        <span>{formatDateTime(selectedSurat.tgl_diajukan)}</span>
+
+                        <span>Status</span>
+                        <span>:</span>
+                        <span>
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold border ${getStatusBadgeClass(selectedSurat.status)}`}
+                          >
+                            {getStatusLabel(selectedSurat.status)}
+                          </span>
+                        </span>
+
+                        <span>Tanggal Terbit</span>
+                        <span>:</span>
+                        <span>{formatDateTime(selectedSurat.tgl_disetujui)}</span>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h4 className="font-extrabold uppercase text-slate-900 mb-3">
+                        C. Alasan / Keperluan
+                      </h4>
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 whitespace-pre-line leading-relaxed text-slate-700">
+                        {normalizeKeperluan(selectedSurat.keperluan)}
+                      </div>
+                    </section>
+
+                    {selectedSurat.status === "SELESAI" && (
+                      <section>
+                        <h4 className="font-extrabold uppercase text-slate-900 mb-3">
+                          D. Arsip Digital
+                        </h4>
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+                          <p className="text-xs font-bold uppercase text-emerald-700">
+                            Token QR Surat
+                          </p>
+                          <p className="text-xs font-mono break-all mt-2 text-slate-900">
+                            {selectedSurat.token_qr || "Token belum tersedia"}
+                          </p>
+                        </div>
+                      </section>
+                    )}
+
+                    {selectedSurat.status === "REJECTED" && (
+                      <section>
+                        <h4 className="font-extrabold uppercase text-slate-900 mb-3">
+                          D. Alasan Penolakan
+                        </h4>
+                        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 leading-relaxed">
+                          {selectedSurat.alasan_ditolak || "Tidak ada alasan penolakan tersimpan."}
+                        </div>
+                      </section>
+                    )}
+
+                    {selectedSurat.status === "PENDING" && (
+                      <section>
+                        <h4 className="font-extrabold uppercase text-slate-900 mb-3">
+                          D. Catatan Validasi
+                        </h4>
+                        <textarea
+                          value={rejectReason}
+                          onChange={(e) => setRejectReason(e.target.value)}
+                          placeholder="Isi catatan jika surat akan ditolak. Contoh: Keperluan kurang jelas atau data warga belum lengkap."
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium h-24 outline-none focus:border-red-300 focus:ring-4 focus:ring-red-500/10 resize-none transition-all text-sm text-slate-800"
+                        />
+                      </section>
+                    )}
+
+                    <section className="pt-3">
+                      <div className="flex justify-between gap-8 text-sm text-slate-700">
+                        <div className="text-center flex-1">
+                          <p>Mengetahui,</p>
+                          <p className="font-semibold mt-1">Kepala Desa</p>
+                          <div className="h-16" />
+                          <p className="font-bold underline underline-offset-4">Mas Bahlil Ganteng</p>
+                        </div>
+
+                        <div className="text-center flex-1">
+                          <p>Petugas Validasi,</p>
+                          <p className="font-semibold mt-1">Admin Desa</p>
+                          <div className="h-16" />
+                          <p className="font-bold underline underline-offset-4">DigiDesa</p>
+                        </div>
+                      </div>
+                    </section>
                   </div>
                 </div>
-
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 mb-2">
-                    Alasan keperluan
-                  </p>
-                  <p className="p-4 bg-blue-50 border border-blue-100 text-blue-950 rounded-2xl font-medium leading-relaxed text-sm">
-                    {selectedSurat.keperluan || "Tidak ada keterangan keperluan."}
-                  </p>
-                </div>
-
-                {selectedSurat.status === "SELESAI" && (
-                  <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-900">
-                    <p className="text-xs font-semibold text-emerald-700">
-                      Nomor arsip resmi
-                    </p>
-                    <p className="text-sm font-bold mt-2 break-words">
-                      {selectedSurat.no_surat}
-                    </p>
-
-                    <p className="text-xs font-semibold text-emerald-700 mt-4">
-                      Token QR
-                    </p>
-                    <p className="text-xs font-mono break-all font-semibold text-slate-900 mt-1">
-                      {selectedSurat.token_qr}
-                    </p>
-                  </div>
-                )}
-
-                {selectedSurat.status === "REJECTED" && (
-                  <div className="p-5 bg-red-50 border border-red-100 rounded-2xl">
-                    <p className="text-xs font-semibold text-red-700">
-                      Alasan penolakan
-                    </p>
-                    <p className="text-sm font-medium text-red-950 mt-2 leading-relaxed">
-                      {selectedSurat.alasan_ditolak || "Tidak ada alasan penolakan tersimpan."}
-                    </p>
-                  </div>
-                )}
-
-                {selectedSurat.status === "PENDING" && (
-                  <div>
-                    <label className="text-xs font-semibold text-red-600 mb-2 block">
-                      Catatan penolakan
-                    </label>
-                    <textarea
-                      value={rejectReason}
-                      onChange={(e) => setRejectReason(e.target.value)}
-                      placeholder="Contoh: Keperluan kurang jelas, mohon warga melengkapi detail pengajuan."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-medium h-24 outline-none focus:border-red-300 focus:ring-4 focus:ring-red-500/10 resize-none transition-all text-sm text-slate-800"
-                    />
-                  </div>
-                )}
               </div>
 
-              <div className="p-6 border-t border-slate-200 bg-white">
+              <div className="p-5 border-t border-slate-200 bg-white">
                 {selectedSurat.status === "PENDING" ? (
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       disabled={btnLoading}
                       onClick={() => handleVerifySurat(selectedSurat.id, "REJECTED")}
-                      className="w-full py-3 bg-red-50 text-red-700 font-semibold text-sm rounded-xl hover:bg-red-600 hover:text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full py-3 border border-red-200 bg-red-50 text-red-700 font-semibold text-sm rounded-xl hover:bg-red-600 hover:text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {btnLoading ? "Memproses..." : "Tolak"}
+                      {btnLoading ? "Memproses..." : "Tolak Permohonan"}
                     </button>
 
                     <button
                       disabled={btnLoading}
                       onClick={() => handleVerifySurat(selectedSurat.id, "SELESAI")}
-                      className="w-full py-3 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full py-3 bg-emerald-600 text-white font-semibold text-sm rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {btnLoading ? "Memproses..." : "ACC & Terbit"}
+                      {btnLoading ? "Memproses..." : "Setujui & Terbitkan"}
                     </button>
                   </div>
                 ) : (

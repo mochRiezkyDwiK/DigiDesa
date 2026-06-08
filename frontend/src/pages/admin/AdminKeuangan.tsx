@@ -41,7 +41,9 @@ export default function AdminKeuangan() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedTrx, setSelectedTrx] = useState<any>(null);
 
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "INCOME" | "EXPENSE">("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | "INCOME" | "EXPENSE">(
+    "ALL",
+  );
   const [dateFilter, setDateFilter] = useState<string>("");
 
   const [formData, setFormData] = useState<any>({
@@ -66,9 +68,12 @@ export default function AdminKeuangan() {
       const token = localStorage.getItem("token");
       if (!token) return navigate("/login");
 
-      const res = await axios.get("http://localhost:5000/api/v1/admin/finance", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        "http://localhost:5000/api/v1/admin/finance",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (res.data.success) {
         setFinanceData(res.data.data);
@@ -117,7 +122,9 @@ export default function AdminKeuangan() {
       });
 
       if (res.data.success) {
-        alert(isEditMode ? "Transaksi diperbarui!" : "Transaksi berhasil dicatat!");
+        alert(
+          isEditMode ? "Transaksi diperbarui!" : "Transaksi berhasil dicatat!",
+        );
         closeModal();
         fetchFinanceData();
       }
@@ -193,8 +200,11 @@ export default function AdminKeuangan() {
 
   const filteredTransactions =
     financeData?.transactions.filter((t: any) => {
-      const matchType = typeFilter === "ALL" || t.type?.toUpperCase() === typeFilter;
-      const itemDate = t.transaction_date ? t.transaction_date.split("T")[0] : "";
+      const matchType =
+        typeFilter === "ALL" || t.type?.toUpperCase() === typeFilter;
+      const itemDate = t.transaction_date
+        ? t.transaction_date.split("T")[0]
+        : "";
       const matchDate = !dateFilter || itemDate === dateFilter;
 
       return matchType && matchDate;
@@ -336,7 +346,9 @@ export default function AdminKeuangan() {
               >
                 <CheckCircle2 size={14} className="shrink-0" />
                 <span className="truncate">
-                  {typeFilter === "ALL" ? "Semua transaksi tampil" : "Klik untuk reset filter"}
+                  {typeFilter === "ALL"
+                    ? "Semua transaksi tampil"
+                    : "Klik untuk reset filter"}
                 </span>
               </p>
             </button>
@@ -372,10 +384,14 @@ export default function AdminKeuangan() {
 
               <p
                 className={`text-xs font-medium mt-4 ${
-                  typeFilter === "INCOME" ? "text-emerald-700" : "text-slate-500"
+                  typeFilter === "INCOME"
+                    ? "text-emerald-700"
+                    : "text-slate-500"
                 }`}
               >
-                {typeFilter === "INCOME" ? "Filter pemasukan aktif" : "Klik untuk filter"}
+                {typeFilter === "INCOME"
+                  ? "Filter pemasukan aktif"
+                  : "Klik untuk filter"}
               </p>
             </button>
 
@@ -413,7 +429,9 @@ export default function AdminKeuangan() {
                   typeFilter === "EXPENSE" ? "text-red-700" : "text-slate-500"
                 }`}
               >
-                {typeFilter === "EXPENSE" ? "Filter pengeluaran aktif" : "Klik untuk filter"}
+                {typeFilter === "EXPENSE"
+                  ? "Filter pengeluaran aktif"
+                  : "Klik untuk filter"}
               </p>
             </button>
 
@@ -526,14 +544,13 @@ export default function AdminKeuangan() {
                                 </p>
 
                                 <p className="text-xs text-slate-400 mt-1 truncate">
-                                  {new Date(t.transaction_date || t.created_at).toLocaleDateString(
-                                    "id-ID",
-                                    {
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric",
-                                    }
-                                  )}
+                                  {new Date(
+                                    t.transaction_date || t.created_at,
+                                  ).toLocaleDateString("id-ID", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })}
                                 </p>
                               </td>
 
@@ -596,59 +613,54 @@ export default function AdminKeuangan() {
                 </table>
               </div>
             </div>
-
             <div className="space-y-6 min-w-0">
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <h3 className="font-bold text-slate-950 mb-6 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <PieChart size={19} />
-                  </div>
-                  Statistik Belanja
+                <h3 className="font-bold text-slate-950 mb-6">
+                  Ringkasan Sistem
                 </h3>
 
-                <div className="space-y-5">
-                  {[
-                    { label: "Infrastruktur", val: 45, color: "bg-blue-500" },
-                    { label: "Bantuan Sosial", val: 30, color: "bg-emerald-500" },
-                    { label: "Operasional", val: 25, color: "bg-amber-500" },
-                  ].map((item) => (
-                    <div key={item.label}>
-                      <div className="flex justify-between text-sm font-semibold mb-2">
-                        <span className="text-slate-500">{item.label}</span>
-                        <span className="text-slate-900">{item.val}%</span>
-                      </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Total Transaksi</span>
+                    <span className="font-bold">
+                      {financeData?.transactions?.length || 0}
+                    </span>
+                  </div>
 
-                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${item.color} rounded-full`}
-                          style={{ width: `${item.val}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Pemasukan</span>
+                    <span className="font-bold text-emerald-600">
+                      {financeData?.transactions?.filter(
+                        (t: any) => t.type?.toUpperCase() === "INCOME",
+                      ).length || 0}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Pengeluaran</span>
+                    <span className="font-bold text-red-600">
+                      {financeData?.transactions?.filter(
+                        (t: any) => t.type?.toUpperCase() === "EXPENSE",
+                      ).length || 0}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Saldo Saat Ini</span>
+                    <span className="font-bold text-blue-600">
+                      {formatIDR(financeData?.summary?.balance)}
+                    </span>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100">
+                    <p className="text-xs text-slate-400">
+                      Statistik diambil langsung dari transaksi yang tersimpan
+                      pada database.
+                    </p>
+                  </div>
                 </div>
               </div>
-
-              <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden">
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl" />
-
-                <h4 className="text-sm font-semibold mb-2 text-slate-400">
-                  Target penyerapan
-                </h4>
-
-                <p className="text-4xl font-bold tracking-tight leading-none">
-                  94.2%
-                </p>
-
-                <div className="mt-6 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 w-[94.2%] rounded-full" />
-                </div>
-
-                <p className="text-xs font-medium mt-4 text-slate-400">
-                  Monitoring kas DigiDesa v1.0
-                </p>
-              </div>
-            </div>
+            </div>{" "}
           </section>
         </div>
 
@@ -691,10 +703,13 @@ export default function AdminKeuangan() {
 
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between gap-5 py-3 border-b border-dashed border-slate-200">
-                      <span className="font-medium text-slate-500">Tanggal nota</span>
+                      <span className="font-medium text-slate-500">
+                        Tanggal nota
+                      </span>
                       <span className="font-semibold text-slate-900 text-right">
                         {new Date(
-                          selectedTrx.transaction_date || selectedTrx.created_at
+                          selectedTrx.transaction_date ||
+                            selectedTrx.created_at,
                         ).toLocaleDateString("id-ID", {
                           weekday: "long",
                           day: "numeric",
@@ -705,21 +720,27 @@ export default function AdminKeuangan() {
                     </div>
 
                     <div className="flex justify-between gap-5 py-3 border-b border-dashed border-slate-200">
-                      <span className="font-medium text-slate-500">Kegiatan</span>
+                      <span className="font-medium text-slate-500">
+                        Kegiatan
+                      </span>
                       <span className="font-semibold text-slate-900 text-right">
                         {selectedTrx.title}
                       </span>
                     </div>
 
                     <div className="flex justify-between gap-5 py-3 border-b border-dashed border-slate-200">
-                      <span className="font-medium text-slate-500">Penerima dana</span>
+                      <span className="font-medium text-slate-500">
+                        Penerima dana
+                      </span>
                       <span className="font-semibold text-blue-600 text-right">
                         {selectedTrx.recipient || "Bendahara Desa"}
                       </span>
                     </div>
 
                     <div className="flex justify-between gap-5 py-3 border-b border-dashed border-slate-200">
-                      <span className="font-medium text-slate-500">Nominal</span>
+                      <span className="font-medium text-slate-500">
+                        Nominal
+                      </span>
                       <span
                         className={`text-lg font-bold text-right ${
                           selectedTrx.type?.toUpperCase() === "INCOME"
@@ -757,7 +778,9 @@ export default function AdminKeuangan() {
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-3">
                         <ImageIcon size={38} />
-                        <p className="text-sm font-semibold">Foto nota kosong</p>
+                        <p className="text-sm font-semibold">
+                          Foto nota kosong
+                        </p>
                       </div>
                     )}
                   </div>
@@ -804,7 +827,9 @@ export default function AdminKeuangan() {
                   <div className="grid grid-cols-2 gap-4">
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, type: "INCOME" })}
+                      onClick={() =>
+                        setFormData({ ...formData, type: "INCOME" })
+                      }
                       className={`py-3 rounded-xl text-sm font-semibold border transition-all ${
                         formData.type === "INCOME"
                           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
@@ -816,7 +841,9 @@ export default function AdminKeuangan() {
 
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, type: "EXPENSE" })}
+                      onClick={() =>
+                        setFormData({ ...formData, type: "EXPENSE" })
+                      }
                       className={`py-3 rounded-xl text-sm font-semibold border transition-all ${
                         formData.type === "EXPENSE"
                           ? "bg-red-50 text-red-700 border-red-200"
@@ -835,7 +862,9 @@ export default function AdminKeuangan() {
                       required
                       type="text"
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                       placeholder="Contoh: Dana Desa Tahap 1"
                     />
@@ -849,7 +878,9 @@ export default function AdminKeuangan() {
                       required
                       type="text"
                       value={formData.recipient}
-                      onChange={(e) => setFormData({ ...formData, recipient: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, recipient: e.target.value })
+                      }
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                       placeholder="Contoh: Toko Bangunan Jaya"
                     />
@@ -864,7 +895,9 @@ export default function AdminKeuangan() {
                         required
                         type="number"
                         value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, amount: e.target.value })
+                        }
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                         placeholder="0"
                       />
@@ -878,7 +911,9 @@ export default function AdminKeuangan() {
                         required
                         type="text"
                         value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, category: e.target.value })
+                        }
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                         placeholder="Contoh: Infrastruktur"
                       />
@@ -889,12 +924,15 @@ export default function AdminKeuangan() {
                     <label className="text-sm font-semibold text-slate-600 mb-1.5 block">
                       Tanggal Transaksi
                     </label>
-                    <input
+                    <input 
                       required
                       type="date"
                       value={formData.transaction_date}
                       onChange={(e) =>
-                        setFormData({ ...formData, transaction_date: e.target.value })
+                        setFormData({
+                          ...formData,
+                          transaction_date: e.target.value,
+                        })
                       }
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                     />
@@ -908,7 +946,10 @@ export default function AdminKeuangan() {
                       type="file"
                       accept="image/*"
                       onChange={(e: any) =>
-                        setFormData({ ...formData, evidence: e.target.files[0] })
+                        setFormData({
+                          ...formData,
+                          evidence: e.target.files[0],
+                        })
                       }
                       className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />

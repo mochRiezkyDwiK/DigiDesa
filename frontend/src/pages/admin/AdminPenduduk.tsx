@@ -41,6 +41,9 @@ export default function AdminPenduduk() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [isKeluargaModalOpen, setIsKeluargaModalOpen] = useState(false);
+  const [selectedKeluarga, setSelectedKeluarga] = useState<any[]>([]);
+  const [selectedKK, setSelectedKK] = useState("");
 
   const [selectedPenduduk, setSelectedPenduduk] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,6 +83,14 @@ export default function AdminPenduduk() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const lihatKeluarga = (noKK: string) => {
+    const anggota = penduduk.filter((p) => String(p.no_kk || "") === String(noKK || ""));
+
+    setSelectedKeluarga(anggota);
+    setSelectedKK(noKK);
+    setIsKeluargaModalOpen(true);
   };
 
   useEffect(() => {
@@ -639,30 +650,30 @@ export default function AdminPenduduk() {
 
                               <td className="px-6 py-5">
                                 <div className="flex items-center justify-center gap-2">
-                                  {warga.status_akun === "PENDING" ? (
-                                    <button
-                                      onClick={() => {
-                                        setSelectedPenduduk(warga);
-                                        setIsAuditModalOpen(true);
-                                      }}
-                                      className="px-3 py-1.5 bg-amber-500 text-white font-semibold text-xs rounded-lg hover:bg-amber-600 flex items-center gap-1.5 transition-all"
-                                    >
-                                      <Eye size={13} />
-                                      Inspect KTP
-                                    </button>
-                                  ) : (
-                                    <span
-                                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                                        warga.status_akun === "BANNED"
-                                          ? "bg-red-50 text-red-600"
-                                          : warga.status_akun?.startsWith("VERIFIED")
-                                            ? "bg-emerald-50 text-emerald-700"
+                                  <span
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                                      warga.status_akun === "BANNED"
+                                        ? "bg-red-50 text-red-600"
+                                        : warga.status_akun?.startsWith("VERIFIED")
+                                          ? "bg-emerald-50 text-emerald-700"
+                                          : warga.status_akun === "PENDING"
+                                            ? "bg-amber-50 text-amber-700"
                                             : "bg-slate-100 text-slate-500"
-                                      }`}
-                                    >
-                                      {warga.status_akun || "INCOMPLETE"}
-                                    </span>
-                                  )}
+                                    }`}
+                                  >
+                                    {warga.status_akun || "INCOMPLETE"}
+                                  </span>
+
+                                  <button
+                                    onClick={() => {
+                                      setSelectedPenduduk(warga);
+                                      setIsAuditModalOpen(true);
+                                    }}
+                                    title="Inspect / Review data warga"
+                                    className="w-8 h-8 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all flex items-center justify-center"
+                                  >
+                                    <Eye size={15} />
+                                  </button>
 
                                   <button
                                     onClick={() => handleEditClick(warga)}
@@ -706,6 +717,7 @@ export default function AdminPenduduk() {
                         <th className="px-6 py-4 text-xs font-semibold text-slate-500">Kepala keluarga</th>
                         <th className="px-6 py-4 text-xs font-semibold text-slate-500">Domisili wilayah</th>
                         <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-center">Jumlah jiwa</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-center">Aksi</th>
                       </tr>
                     </thead>
 
@@ -737,15 +749,30 @@ export default function AdminPenduduk() {
                             </td>
 
                             <td className="px-6 py-5 text-center">
-                              <span className="px-3 py-1 bg-slate-900 text-white font-semibold text-xs rounded-full">
+                              <button
+                                type="button"
+                                onClick={() => lihatKeluarga(fam.no_kk)}
+                                className="px-3 py-1 bg-slate-900 text-white font-semibold text-xs rounded-full hover:bg-blue-600 transition-all"
+                              >
                                 {fam.anggotaCount} Jiwa
-                              </span>
+                              </button>
+                            </td>
+
+                            <td className="px-6 py-5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => lihatKeluarga(fam.no_kk)}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all"
+                              >
+                                <Eye size={13} />
+                                Lihat Anggota
+                              </button>
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="py-14 text-center">
+                          <td colSpan={5} className="py-14 text-center">
                             <p className="text-sm font-semibold text-slate-500">
                               Tidak ada data kartu keluarga ditemukan.
                             </p>
@@ -759,6 +786,84 @@ export default function AdminPenduduk() {
             </div>
           </motion.section>
         </div>
+
+        <AnimatePresence>
+          {isKeluargaModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.96, y: 16 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.96, y: 16 }}
+                className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-7 border-b border-slate-100 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-blue-600 mb-1">Detail Kartu Keluarga</p>
+                    <h2 className="text-2xl font-bold text-slate-950 tracking-tight">
+                      Anggota Keluarga
+                    </h2>
+                    <p className="text-sm text-slate-500 mt-1">No KK: {selectedKK}</p>
+                  </div>
+
+                  <button
+                    onClick={() => setIsKeluargaModalOpen(false)}
+                    className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 rounded-full text-slate-500"
+                  >
+                    <X size={19} />
+                  </button>
+                </div>
+
+                <div className="p-7 max-h-[65vh] overflow-y-auto">
+                  {selectedKeluarga.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedKeluarga.map((anggota) => (
+                        <div
+                          key={anggota.id}
+                          className="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-4"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              className="w-10 h-10 rounded-xl bg-white border border-slate-200"
+                              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${anggota.nama_lengkap}`}
+                              alt="Avatar"
+                            />
+
+                            <div>
+                              <p className="text-sm font-bold text-slate-950">
+                                {anggota.nama_lengkap}
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1">NIK: {anggota.nik || "-"}</p>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <span className="inline-flex px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold">
+                              {anggota.status_hubungan || "Anggota"}
+                            </span>
+                            <p className="text-xs text-slate-500 mt-2">
+                              RT {anggota.rt || "--"} / RW {anggota.rw || "--"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-14 text-center">
+                      <p className="text-sm font-semibold text-slate-500">
+                        Tidak ada anggota keluarga ditemukan.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {isAuditModalOpen && selectedPenduduk && (
@@ -789,10 +894,10 @@ export default function AdminPenduduk() {
                   </div>
 
                   <h2 className="text-2xl font-bold text-slate-950 tracking-tight">
-                    Verifikasi Akun
+                    Inspect Detail Warga
                   </h2>
                   <p className="text-sm text-slate-500 mt-1 mb-8">
-                    Cocokkan data pendaftar dengan berkas KTP yang diunggah.
+                    Review ulang data kependudukan, domisili, status akun, dan berkas KTP warga.
                   </p>
 
                   <div className="space-y-3 text-sm">
@@ -821,6 +926,20 @@ export default function AdminPenduduk() {
                       <span className="font-medium text-slate-500">Hubungan / domisili</span>
                       <span className="font-semibold text-slate-800 text-right">
                         {selectedPenduduk.status_hubungan} • {selectedPenduduk.status_tinggal}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between gap-5 py-3 border-b border-slate-100">
+                      <span className="font-medium text-slate-500">Alamat / wilayah</span>
+                      <span className="font-semibold text-slate-800 text-right">
+                        {selectedPenduduk.alamat || "Belum mengisi alamat"} • RT {selectedPenduduk.rt || "--"} / RW {selectedPenduduk.rw || "--"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between gap-5 py-3 border-b border-slate-100">
+                      <span className="font-medium text-slate-500">Status akun</span>
+                      <span className="font-semibold text-blue-600 text-right">
+                        {selectedPenduduk.status_akun || "INCOMPLETE"}
                       </span>
                     </div>
 
@@ -860,38 +979,46 @@ export default function AdminPenduduk() {
                   </div>
 
                   <div className="space-y-2 mt-6">
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleVerifyAction(selectedPenduduk.id, "ACC_TETAP")}
-                        className="py-3 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 flex items-center justify-center gap-1.5 transition-all"
-                      >
-                        <UserCheck size={14} />
-                        ACC Tetap
-                      </button>
+                    {selectedPenduduk.status_akun?.startsWith("VERIFIED") ? (
+                      <div className="w-full py-3 text-center bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold rounded-xl">
+                        Data warga sudah terverifikasi. Gunakan tombol edit jika ada perubahan data.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => handleVerifyAction(selectedPenduduk.id, "ACC_TETAP")}
+                            className="py-3 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 flex items-center justify-center gap-1.5 transition-all"
+                          >
+                            <UserCheck size={14} />
+                            ACC Tetap
+                          </button>
 
-                      <button
-                        onClick={() => handleVerifyAction(selectedPenduduk.id, "ACC_PENDATANG")}
-                        className="py-3 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 flex items-center justify-center gap-1.5 transition-all"
-                      >
-                        <UserCheck size={14} />
-                        ACC Datang
-                      </button>
-                    </div>
+                          <button
+                            onClick={() => handleVerifyAction(selectedPenduduk.id, "ACC_PENDATANG")}
+                            className="py-3 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 flex items-center justify-center gap-1.5 transition-all"
+                          >
+                            <UserCheck size={14} />
+                            ACC Datang
+                          </button>
+                        </div>
 
-                    <button
-                      onClick={() => handleVerifyAction(selectedPenduduk.id, "TOLAK")}
-                      className="w-full py-3 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold rounded-xl hover:bg-red-600 hover:text-white transition-all"
-                    >
-                      Tolak berkas
-                    </button>
+                        <button
+                          onClick={() => handleVerifyAction(selectedPenduduk.id, "TOLAK")}
+                          className="w-full py-3 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold rounded-xl hover:bg-red-600 hover:text-white transition-all"
+                        >
+                          Tolak berkas
+                        </button>
 
-                    <button
-                      onClick={() => handleVerifyAction(selectedPenduduk.id, "BLOKIR")}
-                      className="w-full py-3 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-red-600 transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Ban size={14} />
-                      Blokir akun
-                    </button>
+                        <button
+                          onClick={() => handleVerifyAction(selectedPenduduk.id, "BLOKIR")}
+                          className="w-full py-3 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-red-600 transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <Ban size={14} />
+                          Blokir akun
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </motion.div>

@@ -41,6 +41,7 @@ interface LaporanData {
 export default function AdminLaporan() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("Semua");
+  const [priorityFilter, setPriorityFilter] = useState<"ALL" | "LOW" | "MEDIUM" | "HIGH">("ALL");
   const [laporan, setLaporan] = useState<LaporanData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLaporan, setSelectedLaporan] = useState<LaporanData | null>(null);
@@ -72,9 +73,36 @@ export default function AdminLaporan() {
   }, []);
 
   const filteredLaporan = laporan.filter((l) => {
-    if (tab === "Semua") return true;
-    return l.status.toLowerCase() === tab.toLowerCase();
+    const matchStatus =
+      tab === "Semua" || l.status?.toLowerCase() === tab.toLowerCase();
+
+    const priorityValue = (l.priority || "").toUpperCase();
+    const normalizedPriority =
+      priorityValue === "EASY" || priorityValue === "LOW" || priorityValue === "RENDAH"
+        ? "LOW"
+        : priorityValue === "MEDIUM" || priorityValue === "SEDANG"
+          ? "MEDIUM"
+          : priorityValue === "HIGH" || priorityValue === "TINGGI"
+            ? "HIGH"
+            : priorityValue;
+
+    const matchPriority = priorityFilter === "ALL" || normalizedPriority === priorityFilter;
+
+    return matchStatus && matchPriority;
   });
+
+  const getPriorityCount = (priority: "LOW" | "MEDIUM" | "HIGH") => {
+    return laporan.filter((l) => {
+      const priorityValue = (l.priority || "").toUpperCase();
+      if (priority === "LOW") {
+        return priorityValue === "LOW" || priorityValue === "EASY" || priorityValue === "RENDAH";
+      }
+      if (priority === "MEDIUM") {
+        return priorityValue === "MEDIUM" || priorityValue === "SEDANG";
+      }
+      return priorityValue === "HIGH" || priorityValue === "TINGGI";
+    }).length;
+  };
 
   const getStatusIcon = (status: string) => {
     if (status === "BARU") return <Clock className="text-amber-500" size={16} />;
@@ -89,6 +117,29 @@ export default function AdminLaporan() {
     if (status === "DITUGASKAN") return "bg-blue-50 text-blue-600 border-blue-100";
     if (status === "PROSES") return "bg-violet-50 text-violet-600 border-violet-100";
     if (status === "SELESAI") return "bg-emerald-50 text-emerald-600 border-emerald-100";
+    return "bg-slate-50 text-slate-500 border-slate-100";
+  };
+
+
+  const getPriorityLabel = (priority: string) => {
+    const value = (priority || "").toUpperCase();
+    if (value === "HIGH" || value === "TINGGI") return "High Priority";
+    if (value === "MEDIUM" || value === "SEDANG") return "Medium Priority";
+    if (value === "LOW" || value === "EASY" || value === "RENDAH") return "Low Priority";
+    return `${priority || "Normal"} Priority`;
+  };
+
+  const getPriorityStyle = (priority: string) => {
+    const value = (priority || "").toUpperCase();
+    if (value === "HIGH" || value === "TINGGI") {
+      return "bg-red-50 text-red-600 border-red-100";
+    }
+    if (value === "MEDIUM" || value === "SEDANG") {
+      return "bg-amber-50 text-amber-600 border-amber-100";
+    }
+    if (value === "LOW" || value === "EASY" || value === "RENDAH") {
+      return "bg-emerald-50 text-emerald-600 border-emerald-100";
+    }
     return "bg-slate-50 text-slate-500 border-slate-100";
   };
 
@@ -185,9 +236,34 @@ export default function AdminLaporan() {
                 </button>
               ))}
             </div>
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-600 hover:bg-slate-50 transition">
-              <Filter size={14} /> Filter Prioritas
-            </button>
+            <div className="flex items-center gap-2 bg-white p-1.5 rounded-[1.5rem] border border-slate-100 shadow-sm">
+              <Filter size={14} className="ml-3 text-slate-400" />
+              {[
+                { key: "ALL", label: "Semua", count: laporan.length },
+                { key: "LOW", label: "Low", count: getPriorityCount("LOW") },
+                { key: "MEDIUM", label: "Medium", count: getPriorityCount("MEDIUM") },
+                { key: "HIGH", label: "High", count: getPriorityCount("HIGH") },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setPriorityFilter(item.key as "ALL" | "LOW" | "MEDIUM" | "HIGH")}
+                  className={`px-4 py-2.5 rounded-[1.2rem] text-[11px] font-black uppercase tracking-widest transition-all ${
+                    priorityFilter === item.key
+                      ? item.key === "HIGH"
+                        ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
+                        : item.key === "MEDIUM"
+                          ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                          : item.key === "LOW"
+                            ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                            : "bg-slate-900 text-white shadow-lg"
+                      : "text-slate-400 hover:text-slate-900"
+                  }`}
+                >
+                  {item.label} ({item.count})
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* GRID LAPORAN */}
@@ -216,12 +292,10 @@ export default function AdminLaporan() {
                       <div className="flex items-center justify-between mb-5">
                         <span
                           className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
-                            lapor.priority === "HIGH"
-                              ? "bg-red-50 text-red-600 border-red-100"
-                              : "bg-slate-50 text-slate-500 border-slate-100"
+                            getPriorityStyle(lapor.priority)
                           }`}
                         >
-                          {lapor.priority} Priority
+                          {getPriorityLabel(lapor.priority)}
                         </span>
                         <span className="text-[10px] font-bold text-slate-300">LPR-00{lapor.id}</span>
                       </div>
