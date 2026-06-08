@@ -18,6 +18,7 @@ import Surat from "./pages/client/Surat";
 import TransparansiAnggaran from "./pages/client/TransparansiAnggaran";
 import Pengumuman from "./pages/client/pengumuman";
 import Bantuan from "./pages/client/bantuan";
+import DetailSuratWarga from "./pages/client/DetailSuratWarga";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -26,6 +27,24 @@ import AdminLaporan from "./pages/admin/AdminLaporan";
 import AdminPenduduk from "./pages/admin/AdminPenduduk";
 import AdminKeuangan from "./pages/admin/AdminKeuangan";
 import AdminPengaturan from "./pages/admin/AdminPengaturan";
+
+// ── 1. KONTEN DUMMY DETAIL (Didefinisikan agar tidak eror "not defined") ──
+function DetailSuratWargaDummy() {
+  return (
+    <div className="p-8 bg-slate-50 min-h-screen flex items-center justify-center">
+      <div className="bg-white p-8 rounded-3xl shadow-sm text-center max-w-sm border border-slate-100">
+        <h2 className="text-xl font-black text-slate-950">Detail Pengajuan Berkas</h2>
+        <p className="text-xs text-slate-400 mt-2">Halaman detail surat ini sukses terhubung dan sedang dalam proses pengembangan.</p>
+        <button 
+          onClick={() => window.history.back()} 
+          className="mt-6 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all"
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   const location = useLocation();
@@ -44,7 +63,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
 
-          {/* onborading */}
+          {/* onboarding */}
           <Route 
             path="/onboarding" 
             element={
@@ -58,9 +77,13 @@ function App() {
           {/* Rute Warga (Client Area) */}
           <Route path="/dashboard-warga" element={<DashboardWarga />} />
           <Route path="/layanan" element={<Layanan />} />
+          
+          {/* ── 2. UBAH JALUR DISINI BIAR SINKRON DENGAN /layanan ── */}
+          <Route path="/layanan/detail/:id" element={<DetailSuratWarga />} />
+          
           <Route path="/lapor" element={<Lapor />} />
           
-          {/* ── DISINI DIUBAH MENJADI /buat-surat BIAR SINKRON SAMA KATALOG Ky ── */}
+          {/* Rute buat surat */}
           <Route path="/buat-surat" element={<Surat />} /> 
           
           <Route path="/finansial" element={<Finansial />} />
@@ -71,12 +94,12 @@ function App() {
 
           {/* Rute Admin (Control Panel Area) */}
           <Route element={<ProtectedRoute allowedRole="admin" />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/validasi" element={<AdminValidasiSurat />} />
-          <Route path="/admin/laporan" element={<AdminLaporan />} />
-          <Route path="/admin/penduduk" element={<AdminPenduduk />} />
-          <Route path="/admin/keuangan" element={<AdminKeuangan />} />
-          <Route path="/admin/pengaturan" element={<AdminPengaturan />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/validasi" element={<AdminValidasiSurat />} />
+            <Route path="/admin/laporan" element={<AdminLaporan />} />
+            <Route path="/admin/penduduk" element={<AdminPenduduk />} />
+            <Route path="/admin/keuangan" element={<AdminKeuangan />} />
+            <Route path="/admin/pengaturan" element={<AdminPengaturan />} />
           </Route>
         </Routes>
       </main>
