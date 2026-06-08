@@ -15,7 +15,7 @@ const services: ServiceItem[] = [
     icon: <FileText className="w-6 h-6" />,
     label: "Pembuatan Surat",
     description: "Ajukan SKU, SKTM, SK Domisili & lainnya secara online tanpa antre.",
-    href: "/create-surat",
+    href: "/buat-surat",
   },
   {
     id: "pengaduan",
@@ -36,7 +36,7 @@ const services: ServiceItem[] = [
     icon: <Heart className="w-6 h-6" />,
     label: "Informasi Bantuan",
     description: "Cek penerima program bantuan sosial, bansos, BLT, dan PKH terbaru.",
-    href: "/layanan/bantuan"
+    href: "https://cekbansos.kemensos.go.id/"
   },
 ];
 
