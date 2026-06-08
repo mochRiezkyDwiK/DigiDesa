@@ -20,7 +20,6 @@ const getUserRepository = () => {
     return userRepository;
 };
 
-// ─── 1. FUNGSI REGISTER (WARGA BARU) ───
 export const register = async (req: Request, res: Response) => {
     try {
         const { nik, nama_lengkap, username, password, no_hp } = req.body;
@@ -116,7 +115,6 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
-// ─── 3. FUNGSI GET PROFILE UTUH (SUDAH DI-FIX DAN DI-MERGE LENGKAP) ───
 export const getProfile = async (req: Request, res: Response) => {
     try {
         const payload = (req as any).user as JwtUserPayload | undefined;

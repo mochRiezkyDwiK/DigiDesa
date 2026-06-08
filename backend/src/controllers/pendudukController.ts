@@ -15,7 +15,7 @@ const getUserRepository = () => {
 // --- 1. FUNGSI TAMBAH PENDUDUK (CREATE) ---
 export const createPenduduk = async (req: Request, res: Response) => {
     try {
-        const { nik, no_kk, nama_lengkap, no_hp, password, alamat, rt, rw, status_hubungan, status_tinggal } = req.body;
+        const { nik, no_kk, nama_lengkap, no_hp, password, alamat, rt, rw } = req.body;
 
         // Validasi Input Wajib
         if (!nik || !no_kk || !nama_lengkap || !no_hp || !alamat || !rt || !rw) {
@@ -61,8 +61,6 @@ export const createPenduduk = async (req: Request, res: Response) => {
             alamat,
             rt,
             rw,
-            status_hubungan: status_hubungan || "Kepala Keluarga",
-            status_tinggal: status_tinggal || "TETAP",
             role: "WARGA",
             wilayah: wilayah // Menghubungkan Relasi (otomatis mengisi wilayahId)
         });
@@ -86,9 +84,7 @@ export const createPenduduk = async (req: Request, res: Response) => {
 // --- 2. FUNGSI AMBIL SEMUA PENDUDUK (READ + FILTER) ---
 export const getAllPenduduk = async (req: Request, res: Response) => {
     try {
-        const rt = Array.isArray(req.query.rt) ? req.query.rt[0] : req.query.rt;
-        const rw = Array.isArray(req.query.rw) ? req.query.rw[0] : req.query.rw;
-        const searchQuery = Array.isArray(req.query.search) ? req.query.search[0] : req.query.search;
+        const { rt, rw, search } = req.query;
         const repo = getUserRepository();
 
         // Gunakan Query Builder agar filter relasi lebih fleksibel
@@ -107,10 +103,9 @@ export const getAllPenduduk = async (req: Request, res: Response) => {
         }
 
         // Search berdasarkan Nama atau NIK
-        if (typeof searchQuery === "string" && searchQuery.trim()) {
-            const searchTerm = searchQuery.trim();
-            query.andWhere("(user.nama_lengkap LIKE :keyword OR user.nik LIKE :keyword)", {
-                keyword: `%${searchTerm}%`
+        if (search) {
+            query.andWhere("(user.nama_lengkap LIKE :search OR user.nik LIKE :search)", { 
+                search: `%${search}%` 
             });
         }
 
@@ -132,12 +127,8 @@ export const getAllPenduduk = async (req: Request, res: Response) => {
 // --- 3. FUNGSI UPDATE DATA PENDUDUK (UPDATE) ---
 export const updatePenduduk = async (req: Request, res: Response) => {
     try {
-        const id = Number(req.params.id);
+        const { id } = req.params;
         const { nama_lengkap, no_hp, alamat, no_kk } = req.body;
-
-        if (!Number.isFinite(id)) {
-            return res.status(400).json({ success: false, message: "ID penduduk tidak valid" });
-        }
         
         const repo = getUserRepository();
         
@@ -167,10 +158,7 @@ export const updatePenduduk = async (req: Request, res: Response) => {
 // --- 4. FUNGSI HAPUS PENDUDUK (DELETE) ---
 export const deletePenduduk = async (req: Request, res: Response) => {
     try {
-        const id = Number(req.params.id);
-        if (!Number.isFinite(id)) {
-            return res.status(400).json({ success: false, message: "ID penduduk tidak valid" });
-        }
+        const { id } = req.params;
         const repo = getUserRepository();
 
         const result = await repo.delete(id);
@@ -192,11 +180,7 @@ export const deletePenduduk = async (req: Request, res: Response) => {
 // --- 5. FUNGSI CARI ANGGOTA KELUARGA ---
 export const getAnggotaKeluarga = async (req: Request, res: Response) => {
     try {
-        const noKkParam = req.params.no_kk;
-        const no_kk = Array.isArray(noKkParam) ? noKkParam[0] : noKkParam;
-        if (!no_kk) {
-            return res.status(400).json({ success: false, message: "Nomor KK wajib diisi" });
-        }
+        const { no_kk } = req.params;
         const repo = getUserRepository();
 
         const anggota = await repo.find({

@@ -46,7 +46,7 @@ export const createFinance = async (req: Request, res: Response) => {
         const { title, type, amount, category, recipient, transaction_date } = req.body;
         
         // Ambil path file kuitansi dari multer (jika ada)
-        const evidenceUrl = req.file ? `/uploads/evidence/${req.file.filename}` : undefined;
+        const evidence_url = req.file ? `/uploads/evidence/${req.file.filename}` : null;
 
         // LOGIKA SALDO OTOMATIS: Cari transaksi terakhir berdasarkan ID terbesar
         const lastTrxArray = await financeRepository.find({
@@ -64,21 +64,16 @@ export const createFinance = async (req: Request, res: Response) => {
             : lastBalance - currentAmount;
 
         // Simpan data lengkap
-        const newFinancePayload: Partial<Finance> = {
+        const newFinance = financeRepository.create({
             title,
             type,
             amount: currentAmount,
             category: category || "Lainnya",
             recipient: recipient || "Internal Desa",
+            evidence_url,
             current_balance: newBalance,
             transaction_date: transaction_date || new Date().toISOString().split('T')[0] // Fallback ke tanggal hari ini jika kosong
-        };
-
-        if (evidenceUrl) {
-            newFinancePayload.evidence_url = evidenceUrl;
-        }
-
-        const newFinance = financeRepository.create(newFinancePayload);
+        });
 
         await financeRepository.save(newFinance);
         
@@ -96,15 +91,11 @@ export const createFinance = async (req: Request, res: Response) => {
 // 3. EDIT TRANSAKSI (UPDATE)
 export const updateFinance = async (req: Request, res: Response) => {
     try {
-        const id = Number(req.params.id);
+        const { id } = req.params;
         const { title, type, amount, category, recipient, transaction_date } = req.body;
 
-        if (!Number.isFinite(id)) {
-            return res.status(400).json({ success: false, message: "ID transaksi tidak valid" });
-        }
-
         // Cari data yang mau diupdate
-        const finance = await financeRepository.findOneBy({ id });
+        const finance = await financeRepository.findOneBy({ id: parseInt(id) });
         
         if (!finance) {
             return res.status(404).json({ success: false, message: "Data tidak ditemukan" });
@@ -143,8 +134,8 @@ export const updateFinance = async (req: Request, res: Response) => {
 // 4. HAPUS TRANSAKSI (DELETE)
 export const deleteFinance = async (req: Request, res: Response) => {
     try {
-        const id = Number(req.params.id);
-        if (!Number.isFinite(id)) {
+        const { id } = req.params;
+        if (!id) {
             return res.status(400).json({ success: false, message: "ID parameter is required" });
         }
 
