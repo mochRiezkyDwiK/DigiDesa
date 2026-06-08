@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
@@ -23,15 +23,15 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import StatsWidget from "../components/StatsWidgets";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+const EASE = [0.22, 1, 0.36, 1];
 
-const stagger: Variants = {
+const stagger = {
   hidden: {},
 
   visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 };
 
-const fadeUp: Variants = {
+const fadeUp = {
   hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
 
   visible: {
@@ -109,27 +109,20 @@ export default function Login() {
         );
 
         if (response.data.success) {
-          const user = response.data.user;
-          const userStatus = (
-            response.data.user.status_akun || ""
-          ).toUpperCase();
-
-          console.log("data user:", user);
-          console.log("status:", user.status_akun);
-          console.log("role:", user.role);
-
           localStorage.clear();
           localStorage.setItem("token", response.data.token);
+
           localStorage.setItem("user", JSON.stringify(response.data.user));
+
           localStorage.setItem("role", response.data.user.role || "");
-          localStorage.setItem("status", response.data.user.status_akun || "");
 
           alert("Login Berhasil!");
+
+          const userStatus = (response.data.user.status_akun || "").toUpperCase();
+          
           if (response.data.user.role === "ADMIN") {
             navigate("/admin");
-          } else if (userStatus === "INCOMPLETE") {
-            navigate("/onboarding");
-          } else if (userStatus === "PENDING") {
+          } else if (userStatus === "INCOMPLETE" || userStatus === "PENDING") {
             navigate("/onboarding");
           } else {
             navigate("/dashboard-warga");
@@ -190,7 +183,7 @@ export default function Login() {
             variants={fadeUp}
             className="w-full max-w-xl mx-auto lg:mx-0"
           >
-            <StatsWidget />
+            {/* <StatsWidget />  */}
           </motion.div>
 
           <motion.div
@@ -228,7 +221,7 @@ export default function Login() {
                 <UserPlus size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">UserPlus</span>
               </button>
-              <button
+              {/* <button
                 type="button"
                 onClick={() =>
                   alert("Login sidik jari terintegrasi perangkat keras.")
@@ -237,7 +230,7 @@ export default function Login() {
               >
                 <Fingerprint size={18} className="mb-1" />
                 <span className="text-[11px] font-bold">Fingerprint</span>
-              </button>
+              </button> */}
             </div>
 
             <form onSubmit={handleAuthSubmit} className="flex flex-col gap-5">
