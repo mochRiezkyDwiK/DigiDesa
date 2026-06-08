@@ -60,3 +60,26 @@ export const getPengaduanByUser = async (req: Request, res: Response): Promise<v
     res.status(500).json({ success: false, message: "Gagal mengambil riwayat laporan." });
   }
 };
+
+export const updateProgresLaporan = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = Number(req.params.id);
+    const { status, catatan_petugas } = req.body;
+    if (!Number.isFinite(id)) {
+      res.status(400).json({ success: false, message: "ID tidak valid." });
+      return;
+    }
+    const report = await getReportRepo().findOne({ where: { id }, relations: ["user", "petugas"] });
+    if (!report) {
+      res.status(404).json({ success: false, message: "Laporan tidak ditemukan." });
+      return;
+    }
+    if (status) report.status = status;
+    if (catatan_petugas !== undefined) report.catatan_petugas = catatan_petugas;
+    await getReportRepo().save(report);
+    res.json({ success: true, message: "Progres laporan diperbarui.", data: report });
+  } catch (error: any) {
+    console.error("Error updateProgresLaporan:", error);
+    res.status(500).json({ success: false, message: "Gagal memperbarui progres." });
+  }
+};
