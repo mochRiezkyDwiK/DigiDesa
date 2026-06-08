@@ -3,7 +3,7 @@ import multer from "multer";
 import path from "path";
 // KUNCIAN: verifyWarga di-import dari adminController di sini
 import { getAllReports, updateReportStatus, verifyWarga, getAllPetugas } from "../controllers/adminController";
-import { updateProgresLaporan } from "../controllers/pengaduanController";
+// import { updateProgresLaporan } from "../controllers/pengaduanController";
 import { getAllPenduduk, createPenduduk, updatePenduduk, deletePenduduk, getAnggotaKeluarga } from "../controllers/pendudukController";import { getFinanceSummary, createFinance, updateFinance, deleteFinance } from "../controllers/financeController";
 import { authenticateToken } from "../middleware/authMiddleware";
 
@@ -23,7 +23,7 @@ router.use(authenticateToken);
 // Laporan (Reports)
 router.get("/reports", getAllReports);
 router.patch("/reports/:id/status", updateReportStatus);
-router.patch("/reports/:id/progres", updateProgresLaporan);
+// router.patch("/reports/:id/progres", updateProgresLaporan);
 router.get("/petugas", getAllPetugas);
 
 // Penduduk (Data Warga)
