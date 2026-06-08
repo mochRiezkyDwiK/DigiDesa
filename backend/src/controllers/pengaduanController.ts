@@ -68,7 +68,6 @@ export const createPengaduan = async (req: Request, res: Response): Promise<void
     });
   }
 };
-// ─── AMBIL RIWAYAT LAPORAN WARGA (KHUSUS WARGA YANG LOGIN) ───
 export const getPengaduanByUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).user?.id;
@@ -76,13 +75,11 @@ export const getPengaduanByUser = async (req: Request, res: Response): Promise<v
       res.status(401).json({ success: false, message: "Akses ditolak, token tidak valid." });
       return;
     }
-
     const reports = await getReportRepo().find({
       where: { user: { id: userId } },
       relations: ["petugas"],
       order: { created_at: "DESC" }
     });
-
     res.json({ success: true, data: reports });
   } catch (error: any) {
     console.error("Error getPengaduanByUser:", error);
