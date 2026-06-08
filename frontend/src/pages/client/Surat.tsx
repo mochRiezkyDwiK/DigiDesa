@@ -16,8 +16,7 @@ import {
   AlertTriangle,
   LogIn,
 } from "lucide-react";
-import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
+import LayoutWarga from "./layoutWarga";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -185,10 +184,15 @@ export default function Surat() {
       </div>
     );
   }
+  const user = dbUser ? {
+  nama_lengkap: dbUser.nama_lengkap || dbUser.nama || "",
+  rt: dbUser.rt || null,
+  rw: dbUser.rw || null
+} : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans antialiased pb-20 flex flex-col relative">
-      <Navbar />
+    <LayoutWarga user={user}>
+    <div className="min-h-screen bg-gray-50 font-sans antialiased pb-20 flex flex-col relative">  
       <header className="h-20 bg-white border-b border-gray-200 sticky top-0 z-50 px-6 shadow-sm">
         <div className="max-w-7xl mx-auto h-full flex items-center">
           <div className="flex gap-4">
@@ -548,7 +552,7 @@ export default function Surat() {
           </div>
         )}
       </AnimatePresence>
-      <Footer />
     </div>
+    </LayoutWarga>
   );
 }
