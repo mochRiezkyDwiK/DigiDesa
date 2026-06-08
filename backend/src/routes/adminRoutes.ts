@@ -4,7 +4,8 @@ import path from "path";
 // KUNCIAN: verifyWarga di-import dari adminController di sini
 import { getAllReports, updateReportStatus, verifyWarga, getAllPetugas } from "../controllers/adminController";
 // import { updateProgresLaporan } from "../controllers/pengaduanController";
-import { getAllPenduduk, createPenduduk, updatePenduduk, deletePenduduk, getAnggotaKeluarga } from "../controllers/pendudukController";import { getFinanceSummary, createFinance, updateFinance, deleteFinance } from "../controllers/financeController";
+import { getAllPenduduk, createPenduduk, updatePenduduk, deletePenduduk, getAnggotaKeluarga } from "../controllers/pendudukController";
+import { getFinanceSummary, createFinance, updateFinance, deleteFinance } from "../controllers/financeController";
 import { authenticateToken } from "../middleware/authMiddleware";
 
 const router = Router();
