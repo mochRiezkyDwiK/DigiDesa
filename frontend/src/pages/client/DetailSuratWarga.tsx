@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, FileText, Calendar, Hash, FileCheck, AlertTriangle, Clock } from "lucide-react";
+import { ArrowLeft, FileText, Calendar, Hash, FileCheck, AlertTriangle, Clock, Download, Printer, MapPin, User, Phone } from "lucide-react";
 
 export default function DetailSuratWarga() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [surat, setSurat] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const suratRef = useRef<HTMLDivElement>(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -16,9 +17,7 @@ export default function DetailSuratWarga() {
         const response = await axios.get(`http://localhost:5000/api/v1/surat/riwayat`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
         if (response.data?.success) {
-          // Mencari data surat yang spesifik sesuai ID rute
           const dataSpesifik = response.data.data.find((s: any) => String(s.id) === String(id));
           setSurat(dataSpesifik);
         }
@@ -28,9 +27,51 @@ export default function DetailSuratWarga() {
         setLoading(false);
       }
     };
-
     fetchDetailSurat();
   }, [id, token]);
+
+  const handlePrint = () => {
+    const printContent = suratRef.current;
+    if (!printContent) return;
+    const originalBody = document.body.innerHTML;
+    document.body.innerHTML = printContent.innerHTML;
+    window.print();
+    document.body.innerHTML = originalBody;
+    window.location.reload();
+  };
+
+  const handleDownload = () => {
+    const printContent = suratRef.current;
+    if (!printContent) return;
+
+    const style = `
+      <style>
+        @page { size: A4; margin: 2cm; }
+        body { font-family: 'Times New Roman', serif; color: #000; }
+        * { box-sizing: border-box; }
+      </style>
+    `;
+
+    const html = `<!DOCTYPE html><html><head>${style}</head><body>${printContent.innerHTML}</body></html>`;
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Surat_${surat?.jenis_surat}_${surat?.no_surat || surat?.id}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getJenisSurat = (kode: string) => {
+    const map: Record<string, string> = {
+      SKD: "SURAT KETERANGAN DOMISILI",
+      SKU: "SURAT KETERANGAN USAHA",
+      SKTM: "SURAT KETERANGAN TIDAK MAMPU",
+    };
+    return map[kode] || kode;
+  };
+
+  const today = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
   if (loading) {
     return (
@@ -57,17 +98,14 @@ export default function DetailSuratWarga() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans antialiased p-6 sm:p-12">
-      <div className="max-w-2xl mx-auto space-y-6">
-        
+      <div className="max-w-3xl mx-auto space-y-6">
+
         {/* Tombol Kembali */}
-        <button 
-          onClick={() => navigate("/dashboard-warga")} 
-          className="flex items-center gap-2 text-xs font-black text-slate-500 hover:text-slate-900 transition-colors"
-        >
+        <button onClick={() => navigate("/dashboard-warga")} className="flex items-center gap-2 text-xs font-black text-slate-500 hover:text-slate-900 transition-colors">
           <ArrowLeft size={16} strokeWidth={3} /> Kembali ke Dashboard
         </button>
 
-        {/* Kartu Utama Detail Surat */}
+        {/* Kartu Status */}
         <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
           <div className="p-8 sm:p-10 border-b border-slate-50 flex items-start justify-between gap-4">
             <div className="flex items-center gap-5">
@@ -79,44 +117,38 @@ export default function DetailSuratWarga() {
                   ID Pengajuan: #{surat.id}
                 </span>
                 <h2 className="text-xl font-black text-slate-900 tracking-tight mt-1.5">
-                  {surat.jenis_surat === "SKD" && "Surat Keterangan Domisili (SKD)"}
-                  {surat.jenis_surat === "SKU" && "Surat Keterangan Usaha (SKU)"}
-                  {surat.jenis_surat === "SKTM" && "Surat Keterangan Tidak Mampu (SKTM)"}
+                  {getJenisSurat(surat.jenis_surat)}
                 </h2>
               </div>
             </div>
-
             <span className={`px-4 py-2 rounded-xl text-[11px] font-black tracking-tight flex-shrink-0 ${
-              surat.status === "SELESAI" ? "bg-emerald-50 text-emerald-600" : 
+              surat.status === "SELESAI" ? "bg-emerald-50 text-emerald-600" :
               surat.status === "REJECTED" ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
             }`}>
               {surat.status}
             </span>
           </div>
 
-          <div className="p-8 sm:p-10 space-y-6 bg-slate-50/40">
-            {/* Detail Informasi */}
-            <div className="grid gap-4">
+          <div className="p-8 sm:p-10 space-y-4 bg-slate-50/40">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white p-5 rounded-2xl border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3 text-slate-400">
-                  <Hash size={18} />
+                  <Hash size={16} />
                   <span className="text-xs font-bold">Nomor Surat</span>
                 </div>
-                <span className="text-xs font-black text-slate-900">{surat.no_surat || "Belum Terbit (Menunggu Validasi)"}</span>
+                <span className="text-xs font-black text-slate-900">{surat.no_surat || "Belum Terbit"}</span>
               </div>
-
               <div className="bg-white p-5 rounded-2xl border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3 text-slate-400">
-                  <Calendar size={18} />
+                  <Calendar size={16} />
                   <span className="text-xs font-bold">Tanggal Diajukan</span>
                 </div>
                 <span className="text-xs font-black text-slate-900">
-                  {new Date(surat.tgl_diajukan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {new Date(surat.tgl_diajukan).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                 </span>
               </div>
             </div>
 
-            {/* Blok Kondisional Jika Ditolak */}
             {surat.status === "REJECTED" && (
               <div className="p-5 bg-red-50 rounded-2xl border border-red-100 flex items-start gap-4">
                 <AlertTriangle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
@@ -127,15 +159,22 @@ export default function DetailSuratWarga() {
               </div>
             )}
 
-            {/* Blok Kondisional Jika Selesai */}
             {surat.status === "SELESAI" ? (
               <div className="p-6 bg-emerald-500 rounded-2xl text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-emerald-500/10">
                 <div className="flex items-center gap-4">
                   <FileCheck size={28} />
                   <div>
                     <h4 className="text-sm font-black">Dokumen Telah Siap!</h4>
-                    <p className="text-[11px] text-emerald-100 font-medium mt-0.5">Surat fisik Anda sudah dicetak dan dapat diambil di kantor desa.</p>
+                    <p className="text-[11px] text-emerald-100 font-medium mt-0.5">Surat fisik dapat diambil di kantor desa.</p>
                   </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2.5 bg-white text-emerald-700 rounded-xl text-xs font-black hover:bg-emerald-50 transition-all">
+                    <Download size={14} /> Unduh
+                  </button>
+                  <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white border border-emerald-400 rounded-xl text-xs font-black hover:bg-emerald-700 transition-all">
+                    <Printer size={14} /> Cetak
+                  </button>
                 </div>
               </div>
             ) : surat.status !== "REJECTED" && (
@@ -149,6 +188,111 @@ export default function DetailSuratWarga() {
             )}
           </div>
         </div>
+
+        {/* Visual Preview Surat */}
+        {surat.status === "SELESAI" && (
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-black text-slate-700">Preview Dokumen Surat</h3>
+              <div className="flex gap-2">
+                <button onClick={handleDownload} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-black hover:bg-blue-100 transition-all">
+                  <Download size={12} /> Unduh HTML
+                </button>
+                <button onClick={handlePrint} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-black hover:bg-slate-200 transition-all">
+                  <Printer size={12} /> Cetak
+                </button>
+              </div>
+            </div>
+
+            {/* Dokumen Surat */}
+            <div className="p-6 bg-slate-100">
+              <div ref={suratRef} className="bg-white shadow-md mx-auto" style={{ maxWidth: "794px", minHeight: "1123px", padding: "60px 80px", fontFamily: "Times New Roman, serif" }}>
+
+                {/* Kop Surat */}
+                <div style={{ borderBottom: "4px double #000", paddingBottom: "12px", marginBottom: "20px" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ width: "80px", verticalAlign: "middle" }}>
+                          <div style={{ width: "70px", height: "70px", border: "2px solid #000", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", textAlign: "center", fontWeight: "bold" }}>
+                            LOGO<br />DESA
+                          </div>
+                        </td>
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <div style={{ fontSize: "13px", fontWeight: "normal" }}>PEMERINTAH KABUPATEN DAERAH</div>
+                          <div style={{ fontSize: "13px", fontWeight: "normal" }}>KECAMATAN SETEMPAT</div>
+                          <div style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px" }}>KANTOR DESA DIGIDESA</div>
+                          <div style={{ fontSize: "11px", color: "#333" }}>
+                            <MapPin size={10} style={{ display: "inline", marginRight: "4px" }} />
+                            Jl. Desa No. 1, Kec. Setempat, Kab. Daerah
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Judul Surat */}
+                <div style={{ textAlign: "center", margin: "24px 0 20px" }}>
+                  <div style={{ fontSize: "15px", fontWeight: "bold", textDecoration: "underline", textTransform: "uppercase", letterSpacing: "2px" }}>
+                    {getJenisSurat(surat.jenis_surat)}
+                  </div>
+                  <div style={{ fontSize: "12px", marginTop: "4px" }}>
+                    Nomor: {surat.no_surat || "___/___/DESA/___"}
+                  </div>
+                </div>
+
+                {/* Isi Surat */}
+                <div style={{ fontSize: "13px", lineHeight: "2", marginBottom: "20px" }}>
+                  <p style={{ marginBottom: "12px" }}>Yang bertanda tangan di bawah ini, Kepala Desa DigiDesa, menerangkan bahwa:</p>
+
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                    <tbody>
+                      {[
+                        ["Nama Lengkap", surat.nama_lengkap || surat.user?.nama_lengkap || "-"],
+                        ["NIK", surat.nik || surat.user?.nik || "-"],
+                        ["Tempat/Tgl Lahir", surat.ttl || "-"],
+                        ["Jenis Kelamin", surat.jenis_kelamin || "-"],
+                        ["Agama", surat.agama || "Islam"],
+                        ["Pekerjaan", surat.pekerjaan || "-"],
+                        ["Alamat", `RT ${surat.rt || surat.user?.rt || "-"} / RW ${surat.rw || surat.user?.rw || "-"}, Desa DigiDesa`],
+                      ].map(([label, value]) => (
+                        <tr key={label}>
+                          <td style={{ width: "200px", paddingBottom: "2px" }}>{label}</td>
+                          <td style={{ width: "20px" }}>:</td>
+                          <td style={{ fontWeight: "bold" }}>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <p style={{ marginTop: "16px" }}>
+                    {surat.jenis_surat === "SKD" && "Adalah benar merupakan warga yang berdomisili dan tercatat sebagai penduduk tetap di wilayah Desa DigiDesa."}
+                    {surat.jenis_surat === "SKU" && "Adalah benar merupakan warga yang menjalankan kegiatan usaha di wilayah Desa DigiDesa."}
+                    {surat.jenis_surat === "SKTM" && "Adalah benar merupakan warga yang tergolong dalam keluarga tidak mampu dan berhak mendapatkan bantuan sosial."}
+                  </p>
+
+                  <p style={{ marginTop: "12px" }}>
+                    Surat keterangan ini dibuat dengan sebenarnya untuk dipergunakan sebagaimana mestinya.
+                  </p>
+                </div>
+
+                {/* Tanda Tangan */}
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "40px" }}>
+                  <div style={{ textAlign: "center", minWidth: "200px" }}>
+                    <div style={{ fontSize: "13px" }}>DigiDesa, {today}</div>
+                    <div style={{ fontSize: "13px", marginBottom: "70px" }}>Kepala Desa,</div>
+                    <div style={{ fontSize: "13px", fontWeight: "bold", borderTop: "1px solid #000", paddingTop: "4px" }}>
+                      NAMA KEPALA DESA
+                    </div>
+                    <div style={{ fontSize: "11px" }}>NIP. -</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
