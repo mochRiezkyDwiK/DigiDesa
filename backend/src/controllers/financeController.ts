@@ -70,10 +70,10 @@ export const createFinance = async (req: Request, res: Response) => {
             amount: currentAmount,
             category: category || "Lainnya",
             recipient: recipient || "Internal Desa",
-            evidence_url,
+            evidence_url: evidence_url || "",
             current_balance: newBalance,
             transaction_date: transaction_date || new Date().toISOString().split('T')[0] // Fallback ke tanggal hari ini jika kosong
-        });
+        } as any);
 
         await financeRepository.save(newFinance);
         
