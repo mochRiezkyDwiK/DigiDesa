@@ -1,4 +1,6 @@
 import axios from "axios";
+import dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
 import * as cheerio from "cheerio";
 import { Request, Response } from "express";
 
